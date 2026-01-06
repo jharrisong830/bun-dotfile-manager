@@ -5,7 +5,8 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "bun bin/run-dev.ts"
+    "dev": "bun bin/run-dev.ts",
+    "dev-build": "bun bin/build-dev.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"

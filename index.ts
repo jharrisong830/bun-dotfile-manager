@@ -1,5 +1,6 @@
 import configuration from "./src/util/configuration";
 import argparse from "./src/util/argparse";
+import buildInfo from "./src/util/build";
 
 const args = argparse();
 const command = args[0];
@@ -22,6 +23,9 @@ switch (command) {
             process.exit(1);
         }
         await configuration.setAndFormatConfig(dotfileRepoPath);
+        break;
+    case "version":
+        console.log(`bun-dotfile-manager version ${buildInfo.version}\nbuilt on ${buildInfo.buildTime} from ${buildInfo.commitHash}\nfor platform ${buildInfo.platform}`);
         break;
     default:
         console.error(`Unknown command: ${command}`);

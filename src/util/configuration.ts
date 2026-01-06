@@ -45,7 +45,7 @@ const YAMLStringToConfigObj = (yamlString: string): Configuration => {
  * @returns promise that resolves to a boolean, indicating if the config file exists or not
  */
 const doesConfigExist = async (): Promise<boolean> => {
-    const path = formatString(PLATFORM_PATHS["win32"], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
     return await file.exists();
 };
@@ -54,7 +54,7 @@ const doesConfigExist = async (): Promise<boolean> => {
  * (re)initializes the config file with default values
  */
 const initializeConfigFile = async (): Promise<void> => {
-    const path = formatString(PLATFORM_PATHS["win32"], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     let file = Bun.file(path);
 
     if (await file.exists()) {
@@ -73,7 +73,7 @@ const initializeConfigFile = async (): Promise<void> => {
  * @throws if the file cannot be read or parsed
  */
 const readAndFormatConfig = async (): Promise<Configuration> => {
-    const path = formatString(PLATFORM_PATHS["win32"], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
     
     try {
@@ -88,7 +88,7 @@ const readAndFormatConfig = async (): Promise<Configuration> => {
 };
 
 const setAndFormatConfig = async (dotfileRepoPath: string): Promise<void> => {
-    const path = formatString(PLATFORM_PATHS["win32"], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
 
     try {
