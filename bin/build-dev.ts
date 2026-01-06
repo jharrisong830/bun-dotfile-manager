@@ -22,7 +22,15 @@ await Bun.build({
     entrypoints: ["index.ts"],
     compile: {
         outfile: `dist/bun-dotfile-manager_${platform}_${version}.exe`,
-        target: TARGET_PLATFORMS[platform]
+        target: TARGET_PLATFORMS[platform],
+        autoloadBunfig: false,
+        autoloadDotenv: false,
+        windows: {
+            title: "Bun Dotfile Manager",
+            publisher: "jhg.app",
+            version: version,
+            description: "Command line utility for managing dotfiles across systems"
+        }
     },
     define: {
         PLATFORM: `'${platform}'`,
