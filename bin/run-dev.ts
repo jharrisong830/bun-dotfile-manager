@@ -3,7 +3,7 @@ import { $ } from "bun";
 import argparse from "../src/util/argparse";
 import { getVersionNumber } from "./common";
 
-const args = argparse().join(" ");
+const args = argparse();
 
 const platform = process.platform;
 if (!["win32", "linux", "darwin"].includes(platform)) {
