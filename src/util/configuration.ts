@@ -2,6 +2,7 @@ import { YAML } from "bun";
 
 import buildInfo from "./build";
 import { formatString } from "./util";
+import files from "../fs/files";
 
 type Configuration = {
     dotfile_repo_path: string;
@@ -55,16 +56,10 @@ const doesConfigExist = async (): Promise<boolean> => {
  */
 const initializeConfigFile = async (): Promise<void> => {
     const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
-    let file = Bun.file(path);
-
-    if (await file.exists()) {
-        // delete the file first if it's already present 
-        file.delete();
-        file = Bun.file(path);    
-    }
+    const file = Bun.file(path);
 
     const defaultConfigContents = configObjToYAML(DEFAULT_CONFIG);
-    await Bun.write(file, defaultConfigContents, { createPath: true });
+    await files.writeFileText(file, defaultConfigContents);
 }
 
 /**
@@ -77,7 +72,7 @@ const readAndFormatConfig = async (): Promise<Configuration> => {
     const file = Bun.file(path);
     
     try {
-        const fileContents = await file.text(); 
+        const fileContents = await files.getFileText(file); 
         const formattedContents = formatString(fileContents, { HOME: HOME_DIR });
         
         const configObj = YAMLStringToConfigObj(formattedContents);
@@ -96,7 +91,7 @@ const setAndFormatConfig = async (dotfileRepoPath: string): Promise<void> => {
         config.dotfile_repo_path = formatString(dotfileRepoPath, { HOME: HOME_DIR });
 
         const newConfigContents = configObjToYAML(config);
-        await Bun.write(file, newConfigContents, { createPath: true });
+        await files.writeFileText(file, newConfigContents);
     } catch (error) {
         throw new Error(`Failed to set configuration file at ${path}: ${error}`);
     }
