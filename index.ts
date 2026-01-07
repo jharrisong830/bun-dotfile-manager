@@ -2,6 +2,9 @@ import configuration from "./src/util/configuration";
 import argparse from "./src/util/argparse";
 import buildInfo from "./src/util/build";
 import find from "./src/fs/find";
+import files from "./src/fs/files";
+import dotfileMarkers from "./src/fs/dotfileMarkers";
+import { formatString, HOME_DIR } from "./src/util/util";
 
 const args = argparse();
 const command = args[0];
@@ -30,7 +33,15 @@ switch (command) {
         break;
     case "test":
         const config = await configuration.readAndFormatConfig();
-        console.log(await find.findAllDotfileMarkers(config.dotfile_repo_path));
+        const markerPaths = await find.findAllDotfileMarkers(config.dotfile_repo_path);
+        for (const path of markerPaths) {
+            console.log(path);
+            const markerContents = await files.getFileText(Bun.file(path));
+            const formattedContents = formatString(markerContents, { HOME: HOME_DIR });
+            if (formattedContents.trim() === "") continue;
+            const asObj = dotfileMarkers.YAMLDocumentToMarkerArr(formattedContents);
+            console.log(asObj);
+        }
         break;
     default:
         console.error(`Unknown command: ${command}`);

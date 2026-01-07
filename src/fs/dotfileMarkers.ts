@@ -1,6 +1,6 @@
 import { YAML } from "bun";
 
-type DotfileMarker = {
+export type DotfileMarker = {
     name: string; // name of the file
     location: string; // where the file should be symlinked to
 }
@@ -26,4 +26,9 @@ const YAMLDocumentToMarkerArr = (yamlString: string): Array<DotfileMarker> => {
     }
 
     return obj as Array<DotfileMarker>;
+};
+
+export default {
+    markerObjToYAML,
+    YAMLDocumentToMarkerArr
 };
