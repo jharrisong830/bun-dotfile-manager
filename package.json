@@ -1,20 +1,17 @@
 {
   "name": "bun-dotfile-manager",
-  "module": "index.ts",
-  "type": "module",
   "version": "0.0.1",
-  "private": true,
-  "scripts": {
-    "dev": "bun bin/run-dev.ts",
-    "dev-build": "bun bin/build-dev.ts"
-  },
+  "module": "index.ts",
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
-  "dependencies": {
-    "fast-glob": "^3.3.3"
-  }
+  "private": true,
+  "scripts": {
+    "dev": "bun bin/run-dev.ts",
+    "dev-build": "bun bin/build-dev.ts"
+  },
+  "type": "module"
 }

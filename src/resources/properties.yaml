@@ -1,0 +1,5 @@
+platform-path:
+    win32: "{HOME}/AppData/Local/bun-dotfile-manager/config.yaml"
+    linux: "{HOME}/.config/bun-dotfile-manager/config.yaml"
+    darwin: "{HOME}/.config/bun-dotfile-manager/config.yaml"
+

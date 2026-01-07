@@ -1,0 +1,5 @@
+platform-path:
+    win32: "test/resources/config.yaml"
+    linux: "test/resources/config.yaml"
+    darwin: "test/resources/config.yaml"
+

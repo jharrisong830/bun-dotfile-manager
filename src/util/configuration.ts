@@ -1,9 +1,7 @@
 import { YAML } from "bun";
 
-import buildInfo from "./build";
-import { formatString } from "./util";
-import files from "../fs/files";
-import { HOME_DIR, PLATFORM_PATHS, DEFAULT_CONFIG } from "./constants";
+import util from "./util";
+import { HOME_DIR, DEFAULT_CONFIG } from "./constants";
 
 export type Configuration = {
     dotfile_repo_path: string;
@@ -34,21 +32,19 @@ const YAMLStringToConfigObj = (yamlString: string): Configuration => {
  * returns whether the configuration file exists
  * @returns promise that resolves to a boolean, indicating if the config file exists or not
  */
-const doesConfigExist = async (): Promise<boolean> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
-    const file = Bun.file(path);
+const doesConfigExist = async (configPath: string): Promise<boolean> => {
+    const file = Bun.file(configPath);
     return await file.exists();
 };
 
 /**
  * (re)initializes the config file with default values
  */
-const initializeConfigFile = async (): Promise<void> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
-    const file = Bun.file(path);
+const initializeConfigFile = async (configPath: string): Promise<void> => {
+    const file = Bun.file(configPath);
 
     const defaultConfigContents = configObjToYAML(DEFAULT_CONFIG);
-    await files.writeFileText(file, defaultConfigContents);
+    await util.writeFileText(file, defaultConfigContents);
 }
 
 /**
@@ -56,33 +52,31 @@ const initializeConfigFile = async (): Promise<void> => {
  * @returns promise that resolves to a Configuration object
  * @throws if the file cannot be read or parsed
  */
-const readAndFormatConfig = async (): Promise<Configuration> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
-    const file = Bun.file(path);
+const readAndFormatConfig = async (configPath: string): Promise<Configuration> => {
+    const file = Bun.file(configPath);
     
     try {
-        const fileContents = await files.getFileText(file); 
-        const formattedContents = formatString(fileContents, { HOME: HOME_DIR });
+        const fileContents = await util.getFileText(file); 
+        const formattedContents = util.formatString(fileContents, { HOME: HOME_DIR });
         
         const configObj = YAMLStringToConfigObj(formattedContents);
         return configObj;
     } catch (error) {
-        throw new Error(`Failed to read or parse configuration file at ${path}: ${error}`);
+        throw new Error(`Failed to read or parse configuration file at ${configPath}: ${error}`);
     }
 };
 
-const setAndFormatConfig = async (dotfileRepoPath: string): Promise<void> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
-    const file = Bun.file(path);
+const setAndFormatConfig = async (configPath: string, dotfileRepoPath: string): Promise<void> => {
+    const file = Bun.file(configPath);
 
     try {
-        let config = await readAndFormatConfig();
-        config.dotfile_repo_path = formatString(dotfileRepoPath, { HOME: HOME_DIR });
+        let config = await readAndFormatConfig(configPath);
+        config.dotfile_repo_path = util.formatString(dotfileRepoPath, { HOME: HOME_DIR });
 
         const newConfigContents = configObjToYAML(config);
-        await files.writeFileText(file, newConfigContents);
+        await util.writeFileText(file, newConfigContents);
     } catch (error) {
-        throw new Error(`Failed to set configuration file at ${path}: ${error}`);
+        throw new Error(`Failed to set configuration file at ${configPath}: ${error}`);
     }
 }
 

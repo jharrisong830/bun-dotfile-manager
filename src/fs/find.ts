@@ -1,15 +1,8 @@
-import fg from "fast-glob";
-
-const PATTERN = "**/.dotfiles";
+import { Glob } from "bun";
 
 const findAllDotfileMarkers = async (repoPath: string): Promise<Array<string>> => {
-    const entries = await fg(PATTERN, {
-        cwd: repoPath,
-        onlyFiles: true,
-        absolute: true
-    });
-
-    return entries;
+    const glob = new Glob("**/.dotfiles");
+    return await Array.fromAsync(glob.scan(repoPath));
 };
 
 export default {
