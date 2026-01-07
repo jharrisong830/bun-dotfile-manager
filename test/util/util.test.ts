@@ -1,4 +1,5 @@
-import { expect, test, describe } from "bun:test";
+import { expect, test, describe, beforeAll, afterAll } from "bun:test";
+import { rm } from "node:fs/promises";
 
 import "../resources/global-setup";
 
@@ -38,5 +39,95 @@ describe("formatString", () => {
     test("formatString with repeated placeholders", () => {
         const res = util.formatString("Hello, {NAME}! Your name is {NAME}.", { NAME: "John" });
         expect(res).toBe("Hello, John! Your name is John.");
+    });
+});
+
+describe("getFileText", () => {
+    const tempDir = "temp";
+    const tempFilePath = `${tempDir}/test.txt`;
+    const tempContents = "test file\n";
+    
+    beforeAll(async () => {
+        try {
+            if (await Bun.file(tempDir).exists()) {
+                await rm(tempDir, { recursive: true });
+            }
+            await util.writeFileText(Bun.file(tempFilePath), tempContents);    
+        } catch (error) {
+            console.error("Couldn't set up temp file. Tests may fail.", error);
+        }
+    });
+
+    test("getFileText passes", async () => {
+        const res = await util.getFileText(Bun.file(tempFilePath));
+        expect(res).toBe(tempContents);
+    });
+
+    test("getFileText file not found", async () => {
+        expect(util.getFileText(Bun.file("temp/dne.txt"))).rejects.toThrow();
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(tempDir, { recursive: true });
+        } catch (error) {
+            console.error("Couldn't clean temp directory", error);
+        }
+    });
+});
+
+describe("writeTextFile", () => {
+    const tempDir = "temp";
+    const tempFilePath = `${tempDir}/test.txt`;
+    const tempContents = "test file\n";
+    
+    beforeAll(async () => {
+        try {
+            if (await Bun.file(tempDir).exists()) {
+                await rm(tempDir, { recursive: true });
+            }
+        } catch (error) {
+            console.error("Couldn't set up temp file. Tests may fail.", error);
+        }
+    });
+
+    test("writeFileText passes", async () => {
+        await util.writeFileText(Bun.file(tempFilePath), tempContents);
+
+        const writtenContents = await util.getFileText(Bun.file(tempFilePath));
+        expect(writtenContents).toBe(tempContents);
+    });
+
+    test("writeFileText passes when file exists", async () => {
+        const newContents = "test\n#2!\n";
+        await util.writeFileText(Bun.file(tempFilePath), tempContents);
+        await util.writeFileText(Bun.file(tempFilePath), newContents); // should overwrite
+
+        const writtenContents = await util.getFileText(Bun.file(tempFilePath));
+        expect(writtenContents).toBe(newContents);
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(tempDir, { recursive: true });
+        } catch (error) {
+            console.error("Couldn't clean temp directory", error);
+        }
+    });
+});
+
+describe("readPropertiesFile", () => {
+    const propertiesFile = Bun.file(APP_PROPERTIES);
+
+    test("readPropertiesFile passes", async () => {
+        const res = await util.readPropertiesFile(propertiesFile);
+        
+        expect(res).toEqual({
+            "platform-path": {
+                win32: "test/resources/config.yaml",
+                linux: "test/resources/config.yaml",
+                darwin: "test/resources/config.yaml"
+            }
+        });
     });
 });
