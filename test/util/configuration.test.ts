@@ -5,12 +5,11 @@ import "../resources/global-setup";
 
 import configuration, { type Configuration } from "../../src/util/configuration";
 import util from "../../src/util/util";
-import buildInfo from "../../src/util/build";
 import constants from "../../src/util/constants";
 
 const properties = await util.readPropertiesFile(Bun.file(APP_PROPERTIES));
 const configPath = util.formatString(
-    (properties["platform-path"] as Record<string, unknown>)[buildInfo.platform] as string, 
+    (properties["platform-path"] as Record<string, unknown>)[PLATFORM] as string, 
     { HOME: constants.HOME_DIR }
 );
 

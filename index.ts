@@ -1,13 +1,12 @@
 import configuration from "./src/util/configuration";
 import argparse from "./src/util/argparse";
-import buildInfo from "./src/util/build";
 import dotfileMarkers from "./src/fs/dotfileMarkers";
 import util from "./src/util/util";
 import constants from "./src/util/constants";
 
 const properties = await util.readPropertiesFile(Bun.file(APP_PROPERTIES));
 const configPath = util.formatString(
-    (properties["platform-path"] as Record<string, unknown>)[buildInfo.platform] as string, 
+    (properties["platform-path"] as Record<string, unknown>)[PLATFORM] as string, 
     { HOME: constants.HOME_DIR }
 );
 
@@ -34,13 +33,20 @@ switch (command) {
         await configuration.setConfig(configPath, dotfileRepoPath);
         break;
     case "version":
-        console.log(`bun-dotfile-manager version ${buildInfo.version}\nbuilt on ${buildInfo.buildTime} from ${buildInfo.commitHash}\nfor platform ${buildInfo.platform}`);
+        console.log(`bun-dotfile-manager version ${VERSION}\nbuilt on ${BUILD_TIME} from ${COMMIT_HASH}\nfor platform ${PLATFORM}`);
         break;
     case "test":
         const config = await configuration.readAndFormatConfig(configPath);
         const markerPaths = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
         for (const path of markerPaths) {
             console.log(path);
+        }
+        break;
+    case "relink":
+        const config2 = await configuration.readAndFormatConfig(configPath);
+        const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config2.dotfile_repo_path);
+        for (const marker of markers) {
+            await dotfileMarkers.createSymlinkForDotfileMarker(marker);
         }
         break;
     default:

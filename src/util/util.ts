@@ -4,6 +4,11 @@ export const formatString = (s: string, vals: Record<string, string>): string =>
     return s.replaceAll(/\{(\w+)\}/g, (_, k) => vals[k] || `{${k}}`);
 };
 
+export const convertToForwardSlashes = (path: string): string => {
+    return path.replaceAll("\\", "/");
+};
+
+
 const getFileText = async (file: Bun.BunFile): Promise<string> => {
     try {
         return await file.text();
@@ -29,5 +34,6 @@ export default {
     formatString,
     writeFileText,
     getFileText,
-    readPropertiesFile
+    readPropertiesFile,
+    convertToForwardSlashes
 };

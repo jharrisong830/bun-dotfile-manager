@@ -1,7 +1,7 @@
-import buildInfo from "./build";
 import { type Configuration } from "./configuration";
+import { convertToForwardSlashes } from "./util";
 
-export const HOME_DIR = (buildInfo.platform === "win32" ? process.env.USERPROFILE : process.env.HOME)?.replaceAll("\\", "/") || "";
+export const HOME_DIR = convertToForwardSlashes((PLATFORM === "win32" ? process.env.USERPROFILE : process.env.HOME) || "");
 
 export const DEFAULT_CONFIG: Configuration = {
     dotfile_repo_path: "{HOME}/dotfiles"
