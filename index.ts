@@ -1,7 +1,6 @@
 import configuration from "./src/util/configuration";
 import argparse from "./src/util/argparse";
 import buildInfo from "./src/util/build";
-import find from "./src/fs/find";
 import dotfileMarkers from "./src/fs/dotfileMarkers";
 import util from "./src/util/util";
 import constants from "./src/util/constants";
@@ -39,14 +38,9 @@ switch (command) {
         break;
     case "test":
         const config = await configuration.readAndFormatConfig(configPath);
-        const markerPaths = await find.findAllDotfileMarkers(config.dotfile_repo_path);
+        const markerPaths = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
         for (const path of markerPaths) {
             console.log(path);
-            const markerContents = await util.getFileText(Bun.file(path));
-            const formattedContents = util.formatString(markerContents, { HOME: constants.HOME_DIR });
-            if (formattedContents.trim() === "") continue;
-            const asObj = dotfileMarkers.YAMLDocumentToMarkerArr(formattedContents);
-            console.log(asObj);
         }
         break;
     default:
