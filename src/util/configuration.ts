@@ -1,22 +1,12 @@
 import { YAML } from "bun";
 
 import buildInfo from "./build";
-import { formatString, HOME_DIR } from "./util";
+import { formatString } from "./util";
 import files from "../fs/files";
+import { HOME_DIR, PLATFORM_PATHS, DEFAULT_CONFIG } from "./constants";
 
-type Configuration = {
+export type Configuration = {
     dotfile_repo_path: string;
-};
-
-const PLATFORM_PATHS = {
-    win32: "{HOME}/AppData/Local/bun-dotfile-manager/config.yaml",
-    linux: "{HOME}/.config/bun-dotfile-manager/config.yaml",
-    darwin: "{HOME}/.config/bun-dotfile-manager/config.yaml"
-};
-
-
-const DEFAULT_CONFIG: Configuration = {
-    dotfile_repo_path: "{HOME}/dotfiles"
 };
 
 

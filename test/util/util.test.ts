@@ -3,6 +3,7 @@ import { expect, test, describe } from "bun:test";
 import "../resources/global-setup";
 
 import util from "../../src/util/util";
+import constants from "../../src/util/constants";
 
 describe("formatString", () => {
     test("formatString no placeholders, no values", () => {
@@ -44,13 +45,13 @@ describe("formatString", () => {
 
 describe("HOME_DIR", () => {
     test("HOME_DIR is defined and non-empty", () => {
-        expect(util.HOME_DIR).toBeDefined();
-        expect(util.HOME_DIR).toBeString();
-        expect(util.HOME_DIR).not.toBe("");
+        expect(constants.HOME_DIR).toBeDefined();
+        expect(constants.HOME_DIR).toBeString();
+        expect(constants.HOME_DIR).not.toBe("");
     });
 
     test("HOME_DIR matches environment HOME", () => {
         const expectedHome = (process.platform === "win32" ? process.env.USERPROFILE : process.env.HOME)?.replaceAll("\\", "/") || "";
-        expect(util.HOME_DIR).toBe(expectedHome);
+        expect(constants.HOME_DIR).toBe(expectedHome);
     });
 });
