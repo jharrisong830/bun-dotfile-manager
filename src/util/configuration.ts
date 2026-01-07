@@ -1,6 +1,6 @@
 import { YAML } from "bun";
 
-import buildInfo, { type SysPlatform } from "./build";
+import buildInfo from "./build";
 import { formatString, HOME_DIR } from "./util";
 import files from "../fs/files";
 
@@ -8,7 +8,7 @@ type Configuration = {
     dotfile_repo_path: string;
 };
 
-const PLATFORM_PATHS: Record<SysPlatform, string> = {
+const PLATFORM_PATHS = {
     win32: "{HOME}/AppData/Local/bun-dotfile-manager/config.yaml",
     linux: "{HOME}/.config/bun-dotfile-manager/config.yaml",
     darwin: "{HOME}/.config/bun-dotfile-manager/config.yaml"
@@ -45,7 +45,7 @@ const YAMLStringToConfigObj = (yamlString: string): Configuration => {
  * @returns promise that resolves to a boolean, indicating if the config file exists or not
  */
 const doesConfigExist = async (): Promise<boolean> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform as SysPlatform], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
     return await file.exists();
 };
@@ -54,7 +54,7 @@ const doesConfigExist = async (): Promise<boolean> => {
  * (re)initializes the config file with default values
  */
 const initializeConfigFile = async (): Promise<void> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform as SysPlatform], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
 
     const defaultConfigContents = configObjToYAML(DEFAULT_CONFIG);
@@ -67,7 +67,7 @@ const initializeConfigFile = async (): Promise<void> => {
  * @throws if the file cannot be read or parsed
  */
 const readAndFormatConfig = async (): Promise<Configuration> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform as SysPlatform], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
     
     try {
@@ -82,7 +82,7 @@ const readAndFormatConfig = async (): Promise<Configuration> => {
 };
 
 const setAndFormatConfig = async (dotfileRepoPath: string): Promise<void> => {
-    const path = formatString(PLATFORM_PATHS[buildInfo.platform as SysPlatform], { HOME: HOME_DIR });
+    const path = formatString(PLATFORM_PATHS[buildInfo.platform], { HOME: HOME_DIR });
     const file = Bun.file(path);
 
     try {

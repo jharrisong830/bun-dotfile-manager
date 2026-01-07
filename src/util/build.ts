@@ -1,5 +1,3 @@
-export type SysPlatform = "win32" | "linux" | "darwin";
-
 const buildInfo = {
     platform: PLATFORM,
     version: VERSION,

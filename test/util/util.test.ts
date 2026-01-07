@@ -1,8 +1,8 @@
 import { expect, test, describe } from "bun:test";
 
-import "./resources/global-setup";
+import "../resources/global-setup";
 
-import util from "../src/util/util";
+import util from "../../src/util/util";
 
 describe("formatString", () => {
     test("formatString no placeholders, no values", () => {
