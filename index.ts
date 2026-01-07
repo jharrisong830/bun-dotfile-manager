@@ -32,7 +32,7 @@ switch (command) {
             console.error("Please provide a path for 'set-config' command.");
             process.exit(1);
         }
-        await configuration.setAndFormatConfig(configPath, dotfileRepoPath);
+        await configuration.setConfig(configPath, dotfileRepoPath);
         break;
     case "version":
         console.log(`bun-dotfile-manager version ${buildInfo.version}\nbuilt on ${buildInfo.buildTime} from ${buildInfo.commitHash}\nfor platform ${buildInfo.platform}`);

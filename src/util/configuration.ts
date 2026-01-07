@@ -15,6 +15,9 @@ const configObjToYAML = (config: Configuration): string => {
 const YAMLStringToConfigObj = (yamlString: string): Configuration => {
     const obj = YAML.parse(yamlString) as Record<string, unknown>;
     
+    if (obj === null || typeof obj !== "object") {
+        throw new Error("Invalid configuration file: not a valid YAML object");
+    }
     if (!Object.keys(obj).includes("dotfile_repo_path")) {
         throw new Error("Invalid configuration file: missing 'dotfile_repo_path' key");
     } 
@@ -45,7 +48,7 @@ const initializeConfigFile = async (configPath: string): Promise<void> => {
 
     const defaultConfigContents = configObjToYAML(DEFAULT_CONFIG);
     await util.writeFileText(file, defaultConfigContents);
-}
+};
 
 /**
  * reads the configuration file and resolves any templated values (such as "{HOME}")
@@ -66,13 +69,14 @@ const readAndFormatConfig = async (configPath: string): Promise<Configuration> =
     }
 };
 
-const setAndFormatConfig = async (configPath: string, dotfileRepoPath: string): Promise<void> => {
+const setConfig = async (configPath: string, dotfileRepoPath: string): Promise<void> => {
     const file = Bun.file(configPath);
 
-    try {
-        let config = await readAndFormatConfig(configPath);
-        config.dotfile_repo_path = util.formatString(dotfileRepoPath, { HOME: HOME_DIR });
+    const config: Configuration = {
+        dotfile_repo_path: dotfileRepoPath
+    };
 
+    try {
         const newConfigContents = configObjToYAML(config);
         await util.writeFileText(file, newConfigContents);
     } catch (error) {
@@ -84,5 +88,7 @@ export default {
     readAndFormatConfig,
     doesConfigExist,
     initializeConfigFile,
-    setAndFormatConfig
+    setConfig,
+    configObjToYAML,
+    YAMLStringToConfigObj
 };
