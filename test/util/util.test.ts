@@ -4,6 +4,7 @@ import { rm } from "node:fs/promises";
 import "../resources/global-setup";
 
 import util from "../../src/util/util";
+import { beforeEach } from "node:test";
 
 describe("formatString", () => {
     test("formatString no placeholders, no values", () => {
@@ -190,5 +191,42 @@ describe("doesDirectoryExist", () => {
         const fakeFile = "test/resources/dne.txt";
         const res = await util.doesDirectoryExist(fakeFile);
         expect(res).toBe(false);
+    });
+});
+
+describe("createDirectoryAtPath", () => {
+    const tempDir = "temp";
+
+    beforeEach(async () => {
+        try {
+            if (await util.doesDirectoryExist(tempDir)) {
+                await rm(tempDir, { recursive: true });
+            }
+        } catch (error) {
+            console.error("Couldn't clean up temp dir. Tests may fail.", error);
+        }
+    });
+
+    test("createDirectoryAtPath creates directory", async () => {
+        expect(await util.doesDirectoryExist(tempDir)).toBe(false);
+
+        await util.createDirectoryAtPath(tempDir);
+        expect(await util.doesDirectoryExist(tempDir)).toBe(true);
+    });
+
+    test("createDirectoryAtPath creates nested directories", async () => {
+        const nestedDir = `${tempDir}/a/b/c/d/e/f/g`;
+        expect(await util.doesDirectoryExist(nestedDir)).toBe(false);
+
+        await util.createDirectoryAtPath(nestedDir);
+        expect(await util.doesDirectoryExist(nestedDir)).toBe(true);
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(tempDir, { recursive: true });
+        } catch (error) {
+            console.error("Couldn't clean temp directory", error);
+        }
     });
 });
