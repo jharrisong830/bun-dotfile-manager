@@ -166,3 +166,29 @@ describe("convertToForwardSlashes", () => {
         expect(res).toBe(expected);
     });
 });
+
+describe("doesDirectoryExist", () => {
+    test("doesDirectoryExist directory exists", async () => {
+        const realDirectory = "test/resources";
+        const res = await util.doesDirectoryExist(realDirectory);
+        expect(res).toBe(true);
+    });
+
+    test("doesDirectoryExist directory does not exist", async () => {
+        const fakeDirectory = "test/dne";
+        const res = await util.doesDirectoryExist(fakeDirectory);
+        expect(res).toBe(false);
+    });
+
+    test("doesDirectoryExist path is a file", async () => {
+        const realFile = "test/resources/config.yaml";
+        const res = await util.doesDirectoryExist(realFile);
+        expect(res).toBe(false);
+    });
+
+    test("doesDirectoryExist path does not exist", async () => {
+        const fakeFile = "test/resources/dne.txt";
+        const res = await util.doesDirectoryExist(fakeFile);
+        expect(res).toBe(false);
+    });
+});
