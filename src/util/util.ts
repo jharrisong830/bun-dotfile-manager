@@ -1,4 +1,6 @@
 import { YAML } from "bun";
+import { readdir } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
 
 export const formatString = (s: string, vals: Record<string, string>): string => {
     return s.replaceAll(/\{(\w+)\}/g, (_, k) => vals[k] || `{${k}}`);
@@ -30,10 +32,29 @@ export const readPropertiesFile = async (file: Bun.BunFile): Promise<Record<stri
     return YAML.parse(content) as Record<string, unknown>;
 };
 
+export const doesDirectoryExist = async (path: string): Promise<boolean> => {
+    try {
+        await readdir(path);
+        return true;
+    } catch {
+        return false;
+    }
+};
+
+export const createDirectoryAtPath = async (path: string): Promise<void> => {
+    try {
+        await mkdir(path, { recursive: true });
+    } catch {
+        // throw new Error(`Failed to create directory at ${path}: ${error}`);
+    }
+};
+
 export default {
     formatString,
     writeFileText,
     getFileText,
     readPropertiesFile,
-    convertToForwardSlashes
+    convertToForwardSlashes,
+    doesDirectoryExist,
+    createDirectoryAtPath
 };
