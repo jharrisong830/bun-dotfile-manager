@@ -1,4 +1,4 @@
-import nfs, { symlink, lstat } from "node:fs/promises";
+import { symlink, lstat } from "node:fs/promises";
 import { createDirectoryAtPath, doesDirectoryExist } from "../util/util";
 
 const linkDotfile = async (source: string, destination: string): Promise<void> => {
