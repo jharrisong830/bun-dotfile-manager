@@ -25,7 +25,6 @@ const unlinkDotfile = async (linkPath: string): Promise<void> => {
     if ((await file.exists()) || (await doesDirectoryExist(linkPath))) {
         console.log("exists!");
         const nodefsStat = await lstat(linkPath);
-        console.log(nodefsStat);
         if (nodefsStat.isSymbolicLink()) {
             console.log(`Removing symlink at ${linkPath}`);
             await file.delete();

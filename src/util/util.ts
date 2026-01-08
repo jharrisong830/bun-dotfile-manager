@@ -44,8 +44,8 @@ export const doesDirectoryExist = async (path: string): Promise<boolean> => {
 export const createDirectoryAtPath = async (path: string): Promise<void> => {
     try {
         await mkdir(path, { recursive: true });
-    } catch {
-        // throw new Error(`Failed to create directory at ${path}: ${error}`);
+    } catch (error) {
+        throw new Error(`Failed to create directory at ${path}: ${error}`);
     }
 };
 
