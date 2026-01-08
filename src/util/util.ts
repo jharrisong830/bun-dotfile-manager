@@ -11,7 +11,7 @@ export const convertToForwardSlashes = (path: string): string => {
 };
 
 
-const getFileText = async (file: Bun.BunFile): Promise<string> => {
+export const getFileText = async (file: Bun.BunFile): Promise<string> => {
     try {
         return await file.text();
     } catch (error) {
@@ -19,7 +19,7 @@ const getFileText = async (file: Bun.BunFile): Promise<string> => {
     }
 };
 
-const writeFileText = async (file: Bun.BunFile, contents: string): Promise<void> => {
+export const writeFileText = async (file: Bun.BunFile, contents: string): Promise<void> => {
     try {
         await Bun.write(file, contents, { createPath: true });
     } catch (error) {

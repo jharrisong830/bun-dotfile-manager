@@ -131,3 +131,38 @@ describe("readPropertiesFile", () => {
         });
     });
 });
+
+describe("convertToForwardSlashes", () => {
+    test("convertToForwardSlashes on Windows path", () => {
+        const path = "C:\\Users\\johng\\file.txt";
+        const expected = "C:/Users/johng/file.txt";
+        const res = util.convertToForwardSlashes(path);
+        expect(res).toBe(expected);
+    });
+
+    test("convertToForwardSlashes on mixed path", () => {
+        const path = "C:\\Users\\johng/file.txt";
+        const expected = "C:/Users/johng/file.txt";
+        const res = util.convertToForwardSlashes(path);
+        expect(res).toBe(expected);
+    });
+
+    test("convertToForwardSlashes no backslashes", () => {
+        const path = "/home/johng/file.txt";
+        const res = util.convertToForwardSlashes(path);
+        expect(res).toBe(path);
+    });
+
+    test("convertToForwardSlashes empty string", () => {
+        const path = "";
+        const res = util.convertToForwardSlashes(path);
+        expect(res).toBe(path);
+    });
+
+    test("convertToForwardSlashes backslash at end", () => {
+        const path = "C:\\Users\\johng\\";
+        const expected = "C:/Users/johng/";
+        const res = util.convertToForwardSlashes(path);
+        expect(res).toBe(expected);
+    });
+});
