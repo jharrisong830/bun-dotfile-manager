@@ -21,7 +21,7 @@ const commitHash = await $`git rev-parse HEAD`.text();
 await Bun.build({
     entrypoints: ["index.ts"],
     compile: {
-        outfile: `dist/bun-dotfile-manager_${platform}_${version}.exe`,
+        outfile: `dist/bun-dotfile-manager_${platform}_${version}${platform === "win32" ? ".exe" : ""}`,
         target: TARGET_PLATFORMS[platform],
         autoloadBunfig: false,
         autoloadDotenv: false,

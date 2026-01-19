@@ -10,8 +10,8 @@
   },
   "private": true,
   "scripts": {
-    "dev": "bun bin/run-dev.ts",
-    "dev-build": "bun bin/build-dev.ts"
+    "dev": "bun bin/run.ts",
+    "build": "bun bin/build.ts"
   },
   "type": "module"
 }
