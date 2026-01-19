@@ -60,18 +60,6 @@ const getAllDotfileMarkersForRepository = async (repoPath: string): Promise<Arra
     return allMarkers;
 };
 
-
-/**
- * converts a dotfile marker into a YAML string 
- * @param marker 
- * @returns 
- */
-const markerObjToYAML = (marker: DotfileMarker): string => {
-    const markerCopy = { ...marker };
-    delete markerCopy._original_path;
-    return YAML.stringify(markerCopy, null, 4);
-};
-
 /**
  * converts a YAML document string into an array of dotfile marker objects
  * @param yamlString 
@@ -80,7 +68,11 @@ const markerObjToYAML = (marker: DotfileMarker): string => {
  * @throws if the document is invalid
  */
 const YAMLDocumentToMarkerArr = (yamlString: string, originalPath: string): Array<DotfileMarker> => {
-    const obj = YAML.parse(yamlString) as Array<Record<string, unknown>>;
+    let obj = YAML.parse(yamlString) as Array<Record<string, unknown>> | Record<string, unknown>;
+    if (!Array.isArray(obj)) {
+        obj = [obj];
+    }
+    obj = obj.filter(item => item !== null && item !== undefined);
     
     for (const item of obj) {
         if (obj === null || typeof obj !== "object") {
@@ -103,7 +95,6 @@ const YAMLDocumentToMarkerArr = (yamlString: string, originalPath: string): Arra
 };
 
 export default {
-    markerObjToYAML,
     YAMLDocumentToMarkerArr,
     findAllDotfileMarkers,
     getAllDotfileMarkersForRepository,
