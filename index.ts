@@ -17,7 +17,8 @@ switch (command) {
     case "init":
         const doesExist = await configuration.doesConfigExist(configPath);
         if (doesExist) {
-            // TODO: warn here
+            console.error(`Configuration file already exists at ${configPath}`);
+            process.exit(1);
         }
         await configuration.initializeConfigFile(configPath);
         break;
@@ -35,16 +36,9 @@ switch (command) {
     case "version":
         console.log(`bun-dotfile-manager version ${VERSION}\nbuilt on ${BUILD_TIME} from ${COMMIT_HASH}\nfor platform ${PLATFORM}`);
         break;
-    case "test":
-        const config = await configuration.readAndFormatConfig(configPath);
-        const markerPaths = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
-        for (const path of markerPaths) {
-            console.log(path);
-        }
-        break;
     case "relink":
-        const config2 = await configuration.readAndFormatConfig(configPath);
-        const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config2.dotfile_repo_path);
+        const config = await configuration.readAndFormatConfig(configPath);
+        const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
         for (const marker of markers) {
             await dotfileMarkers.createSymlinkForDotfileMarker(marker);
         }
