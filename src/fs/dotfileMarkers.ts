@@ -50,10 +50,12 @@ const getAllDotfileMarkersForRepository = async (repoPath: string): Promise<Arra
         const file = Bun.file(path);
         const contents = await util.getFileText(file);
         
-        const formattedContents = util.formatString(contents, { HOME: constants.HOME_DIR });
-        if (formattedContents.trim() === "") continue; // skip if no dotfiles are listed
-
-        const markers = YAMLDocumentToMarkerArr(formattedContents, path);
+        const markers = YAMLDocumentToMarkerArr(contents, path).map(marker => {
+            return {
+                ...marker,
+                location: util.formatString(marker.location, { HOME: constants.HOME_DIR, FILENAME: marker.name })
+            };
+        });
         allMarkers.push(...markers);
     }
 
