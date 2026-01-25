@@ -64,6 +64,26 @@ describe("YAMLDocumentToMarkerArr", () => {
         expect(res).toEqual(expected);
     });
 
+    test("YAMLDocumentToMarkerArr doc splitter in middle", () => {
+        const yaml = `name: .zshrc\nlocation: /home/testuser/.zshrc\n---\nname: .vimrc\nlocation: /home/testuser/.vimrc`;
+
+        const res = dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path);
+        const expected: Array<DotfileMarker> = [
+            {
+                name: ".zshrc",
+                location: "/home/testuser/.zshrc",
+                _original_path: path
+            },
+            {
+                name: ".vimrc",
+                location: "/home/testuser/.vimrc",
+                _original_path: path
+            }
+        ];
+
+        expect(res).toEqual(expected);
+    });
+
     test("YAMLDocumentToMarkerArr null document at end", () => {
         const yaml = `---\nname: .zshrc\nlocation: /home/testuser/.zshrc\n---\nname: .vimrc\nlocation: /home/testuser/.vimrc\n---`;
 
