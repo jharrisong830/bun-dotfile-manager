@@ -36,7 +36,26 @@ const getRepoPathFromMarkerPath = (marker: DotfileMarker): string => {
 const createSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
     const sourcePath = getRepoPathFromMarkerPath(marker);
 
-    await symlink.linkDotfile(sourcePath, marker.location);
+    let location = marker.location;
+
+    if (PLATFORM === "linux" && marker.linux) {
+        if (!marker.linux.shouldLink) return;
+        if (marker.linux.location) {
+            location = marker.linux.location;
+        }
+    } else if (PLATFORM === "darwin" && marker.darwin) {
+        if (!marker.darwin.shouldLink) return;
+        if (marker.darwin.location) {
+                location = marker.darwin.location;
+            }
+    } else if (PLATFORM === "win32" && marker.win32) {
+        if (!marker.win32.shouldLink) return; 
+        if (marker.win32.location) {
+            location = marker.win32.location;
+        }
+    }
+
+    await symlink.linkDotfile(sourcePath, location);
 };
 
 
