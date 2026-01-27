@@ -33,31 +33,38 @@ const getRepoPathFromMarkerPath = (marker: DotfileMarker): string => {
     return `${dir}/${marker.name}`;
 };
 
+const isDotfileLinkedOnCurrentPlatform = (marker: DotfileMarker): boolean => {
+    if (PLATFORM === "linux" && marker.linux) {
+        return marker.linux.shouldLink;
+    } else if (PLATFORM === "darwin" && marker.darwin) {
+        return marker.darwin.shouldLink;
+    } else if (PLATFORM === "win32" && marker.win32) {
+        return marker.win32.shouldLink;
+    }
+
+    return true; // default if not specified
+};
+
+const getLocationForCurrentPlatform = (marker: DotfileMarker): string => {
+    if (marker[PLATFORM] && marker[PLATFORM].location) {
+        return marker[PLATFORM].location;
+    }
+
+    return marker.location;
+};
+
 const createSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
     const sourcePath = getRepoPathFromMarkerPath(marker);
-
-    let location = marker.location;
-
-    if (PLATFORM === "linux" && marker.linux) {
-        if (!marker.linux.shouldLink) return;
-        if (marker.linux.location) {
-            location = marker.linux.location;
-        }
-    } else if (PLATFORM === "darwin" && marker.darwin) {
-        if (!marker.darwin.shouldLink) return;
-        if (marker.darwin.location) {
-                location = marker.darwin.location;
-            }
-    } else if (PLATFORM === "win32" && marker.win32) {
-        if (!marker.win32.shouldLink) return; 
-        if (marker.win32.location) {
-            location = marker.win32.location;
-        }
-    }
+    const location = getLocationForCurrentPlatform(marker);
 
     await symlink.linkDotfile(sourcePath, location);
 };
 
+const deleteSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
+    const location = getLocationForCurrentPlatform(marker);
+    await symlink.unlinkDotfile(location);
+};
+    
 
 /**
  * finds all `.dotfiles` files under a given path
@@ -124,5 +131,7 @@ export default {
     findAllDotfileMarkers,
     getAllDotfileMarkersForRepository,
     getRepoPathFromMarkerPath,
-    createSymlinkForDotfileMarker
+    createSymlinkForDotfileMarker,
+    deleteSymlinkForDotfileMarker,
+    isDotfileLinkedOnCurrentPlatform
 };
