@@ -1,14 +1,27 @@
 import { Glob, YAML } from "bun";
+import * as z from "zod";
+
 import util from "../util/util";
 import constants from "../util/constants";
 import symlink from "../fs/symlink";
 
-export type DotfileMarker = {
-    name: string; // name of the file
-    location: string; // where the file should be symlinked to
-    _original_path?: string; // where the .dotfiles path is located (not included in the .dotfiles schema)
-};
 
+const PlatformOverrideSchema = z.strictObject({
+    shouldLink: z.boolean(),
+    location: z.string().optional()
+});
+
+const DotfileMarkerSchema = z.strictObject({
+    name: z.string(),
+    location: z.string(),
+    _original_path: z.string().optional(),
+
+    linux: PlatformOverrideSchema.optional(),
+    darwin: PlatformOverrideSchema.optional(),
+    win32: PlatformOverrideSchema.optional()
+});
+
+export type DotfileMarker = z.infer<typeof DotfileMarkerSchema>;
 
 /**
  * given a marker, returns the path to the actual dotfile in the repository
@@ -75,25 +88,16 @@ const YAMLDocumentToMarkerArr = (yamlString: string, originalPath: string): Arra
         obj = [obj];
     }
     obj = obj.filter(item => item !== null && item !== undefined);
+
+    let result: Array<DotfileMarker> = [];
     
     for (const item of obj) {
-        if (obj === null || typeof obj !== "object") {
-            throw new Error("Invalid dotfile markers file: not a valid YAML object");
-        }
-        if (!Object.keys(item).includes("name") || !Object.keys(item).includes("location")) {
-            throw new Error("Invalid dotfile markers file: missing 'name' or 'location' key");
-        } 
-        if (typeof item["name"] !== "string" || typeof item["location"] !== "string") {
-            throw new Error("Invalid dotfile markers file: 'name' and 'location' must be strings");
-        }
-        if (Object.keys(item).length !== 2) {
-            throw new Error("Invalid dotfile markers file: unexpected keys present");
-        }
-
-        item["_original_path"] = util.convertToForwardSlashes(originalPath);
+        const parsed = DotfileMarkerSchema.parse(item);
+        parsed._original_path = util.convertToForwardSlashes(originalPath);
+        result.push(parsed);
     }
 
-    return obj as Array<DotfileMarker>;
+    return result;
 };
 
 export default {

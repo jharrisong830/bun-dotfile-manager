@@ -106,18 +106,18 @@ describe("YAMLDocumentToMarkerArr", () => {
     test("YAMLDocumentToMarkerArr invalid document missing key", () => {
         const yaml = `name: .zshrc`;
 
-        expect(() => dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path)).toThrow("Invalid dotfile markers file: missing 'name' or 'location' key");
+        expect(() => dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path)).toThrow();
     });
 
     test("YAMLDocumentToMarkerArr invalid document wrong type", () => {
         const yaml = `name: .zshrc\nlocation: 123`;
 
-        expect(() => dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path)).toThrow("Invalid dotfile markers file: 'name' and 'location' must be strings");
+        expect(() => dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path)).toThrow();
     });
 
     test("YAMLDocumentToMarkerArr invalid document extra keys", () => {
         const yaml = `name: .zshrc\nlocation: /home/testuser/.zshrc\nextra_key: value`;
 
-        expect(() => dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path)).toThrow("Invalid dotfile markers file: unexpected keys present");
+        expect(() => dotfileMarkers.YAMLDocumentToMarkerArr(yaml, path)).toThrow();
     });
 });

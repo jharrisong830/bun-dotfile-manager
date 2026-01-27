@@ -13,5 +13,8 @@
     "dev": "bun bin/run.ts",
     "build": "bun bin/build.ts"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "zod": "^4.3.6"
+  }
 }
