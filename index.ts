@@ -18,7 +18,8 @@ type CommandName =
     "get-config" | 
     "set-config" | 
     "version" | 
-    "relink";
+    "relink" | 
+    "unlink";
 
 type CommandHandler = {
     helptext: string;
@@ -65,8 +66,22 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         handler: async () => {
             const config = await configuration.readAndFormatConfig(configPath);
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
-            for (const marker of markers) {
+            const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
+            console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
+            for (const marker of filteredMarkers) {
                 await dotfileMarkers.createSymlinkForDotfileMarker(marker);
+            }
+        }
+    },
+    "unlink": {
+        helptext: "",
+        handler: async () => {
+            const config = await configuration.readAndFormatConfig(configPath);
+            const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
+            const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
+            console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
+            for (const marker of filteredMarkers) {
+                await dotfileMarkers.deleteSymlinkForDotfileMarker(marker);
             }
         }
     }

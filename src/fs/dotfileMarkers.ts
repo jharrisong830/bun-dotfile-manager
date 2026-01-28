@@ -1,14 +1,27 @@
 import { Glob, YAML } from "bun";
+import * as z from "zod";
+
 import util from "../util/util";
 import constants from "../util/constants";
 import symlink from "../fs/symlink";
 
-export type DotfileMarker = {
-    name: string; // name of the file
-    location: string; // where the file should be symlinked to
-    _original_path?: string; // where the .dotfiles path is located (not included in the .dotfiles schema)
-};
 
+const PlatformOverrideSchema = z.strictObject({
+    shouldLink: z.boolean(),
+    location: z.string().optional()
+});
+
+const DotfileMarkerSchema = z.strictObject({
+    name: z.string(),
+    location: z.string(),
+    _original_path: z.string().optional(),
+
+    linux: PlatformOverrideSchema.optional(),
+    darwin: PlatformOverrideSchema.optional(),
+    win32: PlatformOverrideSchema.optional()
+});
+
+export type DotfileMarker = z.infer<typeof DotfileMarkerSchema>;
 
 /**
  * given a marker, returns the path to the actual dotfile in the repository
@@ -20,12 +33,38 @@ const getRepoPathFromMarkerPath = (marker: DotfileMarker): string => {
     return `${dir}/${marker.name}`;
 };
 
-const createSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
-    const sourcePath = getRepoPathFromMarkerPath(marker);
+const isDotfileLinkedOnCurrentPlatform = (marker: DotfileMarker): boolean => {
+    if (PLATFORM === "linux" && marker.linux) {
+        return marker.linux.shouldLink;
+    } else if (PLATFORM === "darwin" && marker.darwin) {
+        return marker.darwin.shouldLink;
+    } else if (PLATFORM === "win32" && marker.win32) {
+        return marker.win32.shouldLink;
+    }
 
-    await symlink.linkDotfile(sourcePath, marker.location);
+    return true; // default if not specified
 };
 
+const getLocationForCurrentPlatform = (marker: DotfileMarker): string => {
+    if (marker[PLATFORM] && marker[PLATFORM].location) {
+        return marker[PLATFORM].location;
+    }
+
+    return marker.location;
+};
+
+const createSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
+    const sourcePath = getRepoPathFromMarkerPath(marker);
+    const location = getLocationForCurrentPlatform(marker);
+
+    await symlink.linkDotfile(sourcePath, location);
+};
+
+const deleteSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
+    const location = getLocationForCurrentPlatform(marker);
+    await symlink.unlinkDotfile(location);
+};
+    
 
 /**
  * finds all `.dotfiles` files under a given path
@@ -75,25 +114,16 @@ const YAMLDocumentToMarkerArr = (yamlString: string, originalPath: string): Arra
         obj = [obj];
     }
     obj = obj.filter(item => item !== null && item !== undefined);
+
+    let result: Array<DotfileMarker> = [];
     
     for (const item of obj) {
-        if (obj === null || typeof obj !== "object") {
-            throw new Error("Invalid dotfile markers file: not a valid YAML object");
-        }
-        if (!Object.keys(item).includes("name") || !Object.keys(item).includes("location")) {
-            throw new Error("Invalid dotfile markers file: missing 'name' or 'location' key");
-        } 
-        if (typeof item["name"] !== "string" || typeof item["location"] !== "string") {
-            throw new Error("Invalid dotfile markers file: 'name' and 'location' must be strings");
-        }
-        if (Object.keys(item).length !== 2) {
-            throw new Error("Invalid dotfile markers file: unexpected keys present");
-        }
-
-        item["_original_path"] = util.convertToForwardSlashes(originalPath);
+        const parsed = DotfileMarkerSchema.parse(item);
+        parsed._original_path = util.convertToForwardSlashes(originalPath);
+        result.push(parsed);
     }
 
-    return obj as Array<DotfileMarker>;
+    return result;
 };
 
 export default {
@@ -101,5 +131,7 @@ export default {
     findAllDotfileMarkers,
     getAllDotfileMarkersForRepository,
     getRepoPathFromMarkerPath,
-    createSymlinkForDotfileMarker
+    createSymlinkForDotfileMarker,
+    deleteSymlinkForDotfileMarker,
+    isDotfileLinkedOnCurrentPlatform
 };
