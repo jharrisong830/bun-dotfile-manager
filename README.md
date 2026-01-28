@@ -7,7 +7,7 @@ A utility to manage mapping dotfiles from your repository to your system.
 
 ## Installing & Running
 
-Start by cloning this repository. You should not need to install any NPM dependencies, as everything is written using Bun APIs.
+Start by cloning this repository. 
 
 You can run commands from the repository itself, or build an executable for your own use.
 
