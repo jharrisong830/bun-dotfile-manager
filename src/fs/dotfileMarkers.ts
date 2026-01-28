@@ -46,11 +46,16 @@ const isDotfileLinkedOnCurrentPlatform = (marker: DotfileMarker): boolean => {
 };
 
 const getLocationForCurrentPlatform = (marker: DotfileMarker): string => {
+    let loc = marker.location;
+    
     if (marker[PLATFORM] && marker[PLATFORM].location) {
-        return marker[PLATFORM].location;
+        loc = marker[PLATFORM].location;
     }
 
-    return marker.location;
+    return util.formatString(loc, {
+        HOME: constants.HOME_DIR,
+        FILENAME: marker.name
+    });
 };
 
 const createSymlinkForDotfileMarker = async (marker: DotfileMarker): Promise<void> => {
@@ -89,12 +94,7 @@ const getAllDotfileMarkersForRepository = async (repoPath: string): Promise<Arra
         const file = Bun.file(path);
         const contents = await util.getFileText(file);
         
-        const markers = YAMLDocumentToMarkerArr(contents, path).map(marker => {
-            return {
-                ...marker,
-                location: util.formatString(marker.location, { HOME: constants.HOME_DIR, FILENAME: marker.name })
-            };
-        });
+        const markers = YAMLDocumentToMarkerArr(contents, path);
         allMarkers.push(...markers);
     }
 
