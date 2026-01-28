@@ -130,6 +130,13 @@ Once all of the dotfile marker files are created, we can start linking them from
 bdfm relink
 ```
 
+### Unlinking Dotfiles
+
+By default, any existing symlinks will be removed prior to creating a new symlink. Regular files and directories will **NOT** be removed and will generate an error (to be handled later). To remove all specified dotfiles without creating new links, run the following:
+
+```sh
+bdfm unlink
+```
 
 ### Format Specifiers
 
@@ -151,13 +158,54 @@ location: "/home/user/{FILENAME}"
 
 Multiple format specifiers can be used at once.
 
+### Platform-Specific Overrides
+
+In each marker document, you can specify additional keys for each of the supported platforms (`linux`, `darwin` (macOS), and `win32`) to customize the behavior of dotfiles on each platform.
+
+Some files/directories that exist in `~/.config` on Unix-like systems are instead located at `~/AppData/Local` on Windows. By default, we might want a file to be linked into `~/.config`, but we want to override this behavior for Windows:
+
+```yaml
+name: "nvim"
+location: "{HOME}/.config/nvim"
+# override for windows
+win32:
+    shouldLink: true
+    location: "{HOME}/AppData/Local/nvim"
+```
+
+When running on Windows, the `nvim` directory will be linked to `~/AppData/Local/nvim`, instead of its usual location.
+
+`shouldLink` is a **required** boolean value, indicating whether a dotfile should be linked on the given platform.
+
+`location` is an optional string value. If a dotfile is supposed to be linked on the current system, then this location will override the default. If this value is not present, then we will fall back to the default location.
+
+Additionally, multiple platform overrides can be specified for a dotfile:
+
+```yaml
+name: ".zshrc"
+location: "{HOME}/{FILENAME}"
+win32:
+    shouldLink: false
+linux:
+    shouldLink: false
+
+---
+
+name: ".bashrc"
+location: "{HOME}/{FILENAME}"
+win32:
+    shouldLink: true
+    location: "{HOME}/gitbash.bashrc"
+darwin:
+    shouldLink: false
+```
+
 
 ## Roadmap
 
 - Add more detailed CLI help/usage messages
 - Make error handling more consistent, rather than just allowing `throw`s
   - Could propagate up to `index.ts`, and handle from there, so long as error details are enough 
+- Get confirmation instead of errors for overwriting regular files
 - Implement more formal logging (outside of `console.log` and `console.error`) and exiting
-- Add an optional `windows_path` property for markers, when dotfiles have different locations between systems (i.e. `~/.config/...` vs. `~/AppData/Local/...`)
-- Add include/exclude flags for whether to symlink files when running on certain systems
 - Use GitHub actions to build executables for commits, and utilize GitHub releases 
