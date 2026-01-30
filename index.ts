@@ -104,14 +104,19 @@ const constructHelpText = (): string => {
     return helpText.trimEnd();
 };
 
-if (!command) {
-    console.error("Please provide a command.");
-    await commandHandlers["help"].handler();
-    process.exit(1);
-} else if (command in commandHandlers) {
-    await commandHandlers[command as CommandName].handler();
-} else {
-    console.error(`Unknown command: ${command}`);
-    await commandHandlers["help"].handler();
+try {
+    if (!command) {
+        console.error("Please provide a command.");
+        await commandHandlers["help"].handler();
+        process.exit(1);
+    } else if (command in commandHandlers) {
+        await commandHandlers[command as CommandName].handler();
+    } else {
+        console.error(`Unknown command: ${command}`);
+        await commandHandlers["help"].handler();
+        process.exit(1);
+    }
+} catch (err) {
+    console.error(`There was an error while executing this command:\n${err}`);
     process.exit(1);
 }
