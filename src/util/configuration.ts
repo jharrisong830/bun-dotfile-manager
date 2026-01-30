@@ -53,20 +53,15 @@ const initializeConfigFile = async (configPath: string): Promise<void> => {
 /**
  * reads the configuration file and resolves any templated values (such as "{HOME}")
  * @returns promise that resolves to a Configuration object
- * @throws if the file cannot be read or parsed
  */
 const readAndFormatConfig = async (configPath: string): Promise<Configuration> => {
     const file = Bun.file(configPath);
     
-    try {
-        const fileContents = await util.getFileText(file); 
-        const formattedContents = util.formatString(fileContents, { HOME: HOME_DIR });
+    const fileContents = await util.getFileText(file); 
+    const formattedContents = util.formatString(fileContents, { HOME: HOME_DIR });
         
-        const configObj = YAMLStringToConfigObj(formattedContents);
-        return configObj;
-    } catch (error) {
-        throw new Error(`Failed to read or parse configuration file at ${configPath}: ${error}`);
-    }
+    const configObj = YAMLStringToConfigObj(formattedContents);
+    return configObj;
 };
 
 const setConfig = async (configPath: string, dotfileRepoPath: string): Promise<void> => {
@@ -76,12 +71,8 @@ const setConfig = async (configPath: string, dotfileRepoPath: string): Promise<v
         dotfile_repo_path: dotfileRepoPath
     };
 
-    try {
-        const newConfigContents = configObjToYAML(config);
-        await util.writeFileText(file, newConfigContents);
-    } catch (error) {
-        throw new Error(`Failed to set configuration file at ${configPath}: ${error}`);
-    }
+    const newConfigContents = configObjToYAML(config);
+    await util.writeFileText(file, newConfigContents);
 }
 
 export default {

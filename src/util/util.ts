@@ -12,19 +12,11 @@ export const convertToForwardSlashes = (path: string): string => {
 
 
 export const getFileText = async (file: Bun.BunFile): Promise<string> => {
-    try {
-        return await file.text();
-    } catch (error) {
-        throw new Error(`Failed to read file: ${error}`);
-    }
+    return await file.text();
 };
 
 export const writeFileText = async (file: Bun.BunFile, contents: string): Promise<void> => {
-    try {
-        await Bun.write(file, contents, { createPath: true });
-    } catch (error) {
-        throw new Error(`Failed to write file: ${error}`);
-    }
+    await Bun.write(file, contents, { createPath: true });
 };
 
 export const readPropertiesFile = async (file: Bun.BunFile): Promise<Record<string, unknown>> => {
@@ -42,11 +34,7 @@ export const doesDirectoryExist = async (path: string): Promise<boolean> => {
 };
 
 export const createDirectoryAtPath = async (path: string): Promise<void> => {
-    try {
-        await mkdir(path, { recursive: true });
-    } catch (error) {
-        throw new Error(`Failed to create directory at ${path}: ${error}`);
-    }
+    await mkdir(path, { recursive: true });
 };
 
 export default {
