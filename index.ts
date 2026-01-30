@@ -14,12 +14,13 @@ const args = argparse();
 const command = args[0];
 
 type CommandName = 
-    "init" | 
-    "get-config" | 
-    "set-config" | 
-    "version" | 
-    "relink" | 
-    "unlink";
+      "init" 
+    | "get-config"
+    | "set-config"
+    | "version" 
+    | "relink" 
+    | "unlink"
+    | "help";
 
 type CommandHandler = {
     helptext: string;
@@ -28,7 +29,7 @@ type CommandHandler = {
 
 const commandHandlers: Record<CommandName, CommandHandler> = {
     "init": {
-        helptext: "",
+        helptext: "init\ninitializes a new configuration file",
         handler: async () => {
             const doesExist = await configuration.doesConfigExist(configPath);
             if (doesExist) {
@@ -39,13 +40,13 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "get-config": {
-        helptext: "",
+        helptext: "get-config\nretrieves and displays the current configuration",
         handler: async () => {
             console.log(await configuration.readAndFormatConfig(configPath));
         }
     },
     "set-config": {
-        helptext: "",
+        helptext: "set-config <dotfile_repo_path>\nsets the dotfile repository path in the configuration",
         handler: async () => {
             const dotfileRepoPath = args[1];
             if (!dotfileRepoPath) {
@@ -56,13 +57,13 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "version": {
-        helptext: "",
+        helptext: "version\ndisplays version information",
         handler: async () => {
             console.log(`bun-dotfile-manager version ${VERSION}\nbuilt on ${BUILD_TIME} from ${COMMIT_HASH}\nfor platform ${PLATFORM}`);
         }
     },
     "relink": {
-        helptext: "",
+        helptext: "relink\nrecreates all symlinks for dotfiles on the current platform",
         handler: async () => {
             const config = await configuration.readAndFormatConfig(configPath);
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
@@ -74,7 +75,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "unlink": {
-        helptext: "",
+        helptext: "unlink\ndeletes all symlinks for dotfiles on the current platform",
         handler: async () => {
             const config = await configuration.readAndFormatConfig(configPath);
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
@@ -84,15 +85,33 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
                 await dotfileMarkers.deleteSymlinkForDotfileMarker(marker);
             }
         }
+    },
+    "help": {
+        helptext: "help\ndisplays this help message",
+        handler: async () => {
+            console.log(constructHelpText());
+        }
     }
-}
+};
+
+const constructHelpText = (): string => {
+    let helpText = "bun-dotfile-manager\n\nAvailable commands:\n\n";
+
+    for (const command in commandHandlers) {
+        helpText += commandHandlers[command as CommandName].helptext + "\n\n";
+    }
+
+    return helpText.trimEnd();
+};
 
 if (!command) {
     console.error("Please provide a command.");
+    await commandHandlers["help"].handler();
     process.exit(1);
 } else if (command in commandHandlers) {
     await commandHandlers[command as CommandName].handler();
 } else {
     console.error(`Unknown command: ${command}`);
+    await commandHandlers["help"].handler();
     process.exit(1);
 }
