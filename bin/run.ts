@@ -15,4 +15,4 @@ const version = `DEV-${await getVersionNumber()}`;
 const buildTime = new Date().toISOString();
 const commitHash = await $`git rev-parse HEAD`.text();
 
-await $`bun --define PLATFORM=\"'${platform}'\" --define VERSION=\"'${version}'\" --define BUILD_TIME=\"'${buildTime}'\" --define COMMIT_HASH=\"'${commitHash.trim()}'\" --define APP_PROPERTIES=\"'src/resources/properties.yaml'\" index.ts ${args}`;
+await $`bun --define PLATFORM=\"'${platform}'\" --define VERSION=\"'${version}'\" --define BUILD_TIME=\"'${buildTime}'\" --define COMMIT_HASH=\"'${commitHash.trim()}'\" index.ts ${args}`;

@@ -3,8 +3,8 @@ import argparse from "./src/util/argparse";
 import dotfileMarkers from "./src/fs/dotfileMarkers";
 import util from "./src/util/util";
 import constants from "./src/util/constants";
+import properties from "./src/resources/properties.yaml";
 
-const properties = await util.readPropertiesFile(Bun.file(APP_PROPERTIES));
 const configPath = util.formatString(
     (properties["platform-path"] as Record<string, unknown>)[PLATFORM] as string, 
     { HOME: constants.HOME_DIR }
