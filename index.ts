@@ -10,7 +10,7 @@ const configPath = util.formatString(
     { HOME: constants.HOME_DIR }
 );
 
-const { positionals, dotfile_repo } = argparse();
+const { positionals, dotfile_repo_path } = argparse();
 const command = positionals[0];
 
 type CommandName = 
@@ -65,17 +65,15 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         helptext: "",
         handler: async () => {
             let config;
-            if (dotfile_repo != "") { // if specified via CLI arg, use that instead
-                console.log(`Using CLI config: ${dotfile_repo}`);
+            if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
+                console.log(`Using CLI config: ${dotfile_repo_path}`);
                 config = {
-                    dotfile_repo_path: dotfile_repo
+                    dotfile_repo_path: dotfile_repo_path
                 };
             } else {
                 console.log(`Using config file at ${configPath}`);
                 config = await configuration.readAndFormatConfig(configPath);
             }
-
-            return;
 
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
             const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
@@ -89,10 +87,10 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         helptext: "",
         handler: async () => {
             let config;
-            if (dotfile_repo != "") { // if specified via CLI arg, use that instead
-                console.log(`Using CLI config: ${dotfile_repo}`);
+            if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
+                console.log(`Using CLI config: ${dotfile_repo_path}`);
                 config = {
-                    dotfile_repo_path: dotfile_repo
+                    dotfile_repo_path: dotfile_repo_path
                 };
             } else {
                 console.log(`Using config file at ${configPath}`);

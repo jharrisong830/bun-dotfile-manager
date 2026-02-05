@@ -1,9 +1,9 @@
 import { parseArgs } from "util";
 
-const argparse = (): { positionals: Array<string>, dotfile_repo: string } => {
-    const { positionals, values: { dotfile_repo } } = parseArgs({
+const argparse = (): { positionals: Array<string>, dotfile_repo_path: string } => {
+    const { positionals, values: { dotfile_repo_path } } = parseArgs({
         options: {
-            dotfile_repo: {
+            dotfile_repo_path: {
                 type: "string",
                 default: ""
             }
@@ -12,7 +12,7 @@ const argparse = (): { positionals: Array<string>, dotfile_repo: string } => {
         strict: true
     });
 
-    return { positionals, dotfile_repo };
+    return { positionals, dotfile_repo_path };
 };
 
 export default argparse;
