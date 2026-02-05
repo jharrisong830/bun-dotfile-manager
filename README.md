@@ -39,6 +39,14 @@ A typical config file will look as follows. You can use `{HOME}` within this pat
 dotfile_repo_path: "{HOME}/dotfiles"
 ```
 
+If this config file doesn't exist, you can specify the dotfile repository location as a CLI option. This will take precedence over the location specified in the config file, if it exists.
+
+```sh
+bdfm relink --dotfile_repo_path /home/user/dotfiles
+```
+
+This option is useful if you are setting up your dotfiles for the first time, and want to include the `bdfm` config in your dotfiles repository.
+
 ### Dotfile Marker Files
 
 A dotfile marker file will sit in the same directory as a dotfile. It is formatted as a multi-document YAML file, with each document specifying one dotfile/folder in the current directory. For example, let's say our dotfile repo had the following structure:

@@ -3,7 +3,11 @@ import { $ } from "bun";
 import argparse from "../src/util/argparse";
 import { getVersionNumber } from "./common";
 
-const args = argparse();
+const { positionals, dotfile_repo } = argparse();
+const args = [...positionals];
+if (dotfile_repo !== "") {
+    args.push(`--dotfile_repo`, dotfile_repo);
+}
 
 const platform = process.platform;
 if (!["win32", "linux", "darwin"].includes(platform)) {

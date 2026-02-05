@@ -10,8 +10,8 @@ const configPath = util.formatString(
     { HOME: constants.HOME_DIR }
 );
 
-const args = argparse();
-const command = args[0];
+const { positionals, dotfile_repo } = argparse();
+const command = positionals[0];
 
 type CommandName = 
     "init" | 
@@ -47,7 +47,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "set-config": {
         helptext: "",
         handler: async () => {
-            const dotfileRepoPath = args[1];
+            const dotfileRepoPath = positionals[1];
             if (!dotfileRepoPath) {
                 console.error("Please provide a path for 'set-config' command.");
                 process.exit(1);
@@ -64,7 +64,19 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "relink": {
         helptext: "",
         handler: async () => {
-            const config = await configuration.readAndFormatConfig(configPath);
+            let config;
+            if (dotfile_repo != "") { // if specified via CLI arg, use that instead
+                console.log(`Using CLI config: ${dotfile_repo}`);
+                config = {
+                    dotfile_repo_path: dotfile_repo
+                };
+            } else {
+                console.log(`Using config file at ${configPath}`);
+                config = await configuration.readAndFormatConfig(configPath);
+            }
+
+            return;
+
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
             const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
             console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
@@ -76,7 +88,17 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "unlink": {
         helptext: "",
         handler: async () => {
-            const config = await configuration.readAndFormatConfig(configPath);
+            let config;
+            if (dotfile_repo != "") { // if specified via CLI arg, use that instead
+                console.log(`Using CLI config: ${dotfile_repo}`);
+                config = {
+                    dotfile_repo_path: dotfile_repo
+                };
+            } else {
+                console.log(`Using config file at ${configPath}`);
+                config = await configuration.readAndFormatConfig(configPath);
+            }
+
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
             const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
             console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
