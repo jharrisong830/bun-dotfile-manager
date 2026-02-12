@@ -20,6 +20,7 @@ type CommandName =
     | "version" 
     | "relink" 
     | "unlink"
+    | "list"
     | "help";
 
 type CommandHandler = {
@@ -103,6 +104,32 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
             console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
             for (const marker of filteredMarkers) {
                 await dotfileMarkers.deleteSymlinkForDotfileMarker(marker);
+            }
+        }
+    },
+    "list": {
+        helptext: "list\ndisplays all dotfiles in your repository that will be managed on the current platform",
+        handler: async () => {
+            let config;
+            if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
+                console.log(`Using CLI config: ${dotfile_repo_path}`);
+                config = {
+                    dotfile_repo_path: dotfile_repo_path
+                };
+            } else {
+                console.log(`Using config file at ${configPath}`);
+                config = await configuration.readAndFormatConfig(configPath);
+            }
+
+            const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
+            const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
+
+            console.log(`Dotfiles for ${PLATFORM}:\n`);
+            for (const marker of filteredMarkers) {
+                console.log(marker.name);
+                console.log(`    Source:      ${dotfileMarkers.getRepoPathFromMarkerPath(marker)}`);
+                console.log(`    Destination: ${dotfileMarkers.getLocationForCurrentPlatform(marker)}`);
+                console.log();
             }
         }
     },

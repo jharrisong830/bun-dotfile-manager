@@ -133,5 +133,6 @@ export default {
     getRepoPathFromMarkerPath,
     createSymlinkForDotfileMarker,
     deleteSymlinkForDotfileMarker,
-    isDotfileLinkedOnCurrentPlatform
+    isDotfileLinkedOnCurrentPlatform,
+    getLocationForCurrentPlatform
 };
