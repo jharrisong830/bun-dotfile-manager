@@ -36,8 +36,7 @@ await Bun.build({
         PLATFORM: `'${platform}'`,
         VERSION: `'${version}'`,
         BUILD_TIME: `'${buildTime}'`,
-        COMMIT_HASH: `'${commitHash.trim()}'`,
-        APP_PROPERTIES: `'src/resources/properties.yaml'`
+        COMMIT_HASH: `'${commitHash.trim()}'`
     },
     minify: true,
     sourcemap: "linked"

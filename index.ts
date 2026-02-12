@@ -3,8 +3,8 @@ import argparse from "./src/util/argparse";
 import dotfileMarkers from "./src/fs/dotfileMarkers";
 import util from "./src/util/util";
 import constants from "./src/util/constants";
+import properties from "./src/resources/properties.yaml";
 
-const properties = await util.readPropertiesFile(Bun.file(APP_PROPERTIES));
 const configPath = util.formatString(
     (properties["platform-path"] as Record<string, unknown>)[PLATFORM] as string, 
     { HOME: constants.HOME_DIR }
@@ -14,12 +14,13 @@ const { positionals, dotfile_repo_path } = argparse();
 const command = positionals[0];
 
 type CommandName = 
-    "init" | 
-    "get-config" | 
-    "set-config" | 
-    "version" | 
-    "relink" | 
-    "unlink";
+      "init" 
+    | "get-config"
+    | "set-config"
+    | "version" 
+    | "relink" 
+    | "unlink"
+    | "help";
 
 type CommandHandler = {
     helptext: string;
@@ -28,7 +29,7 @@ type CommandHandler = {
 
 const commandHandlers: Record<CommandName, CommandHandler> = {
     "init": {
-        helptext: "",
+        helptext: "init\ninitializes a new configuration file",
         handler: async () => {
             const doesExist = await configuration.doesConfigExist(configPath);
             if (doesExist) {
@@ -39,13 +40,13 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "get-config": {
-        helptext: "",
+        helptext: "get-config\nretrieves and displays the current configuration",
         handler: async () => {
             console.log(await configuration.readAndFormatConfig(configPath));
         }
     },
     "set-config": {
-        helptext: "",
+        helptext: "set-config <dotfile_repo_path>\nsets the dotfile repository path in the configuration",
         handler: async () => {
             const dotfileRepoPath = positionals[1];
             if (!dotfileRepoPath) {
@@ -56,13 +57,13 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "version": {
-        helptext: "",
+        helptext: "version\ndisplays version information",
         handler: async () => {
             console.log(`bun-dotfile-manager version ${VERSION}\nbuilt on ${BUILD_TIME} from ${COMMIT_HASH}\nfor platform ${PLATFORM}`);
         }
     },
     "relink": {
-        helptext: "",
+        helptext: "relink\nrecreates all symlinks for dotfiles on the current platform",
         handler: async () => {
             let config;
             if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
@@ -84,7 +85,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "unlink": {
-        helptext: "",
+        helptext: "unlink\ndeletes all symlinks for dotfiles on the current platform",
         handler: async () => {
             let config;
             if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
@@ -104,15 +105,38 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
                 await dotfileMarkers.deleteSymlinkForDotfileMarker(marker);
             }
         }
+    },
+    "help": {
+        helptext: "help\ndisplays this help message",
+        handler: async () => {
+            console.log(constructHelpText());
+        }
     }
-}
+};
 
-if (!command) {
-    console.error("Please provide a command.");
-    process.exit(1);
-} else if (command in commandHandlers) {
-    await commandHandlers[command as CommandName].handler();
-} else {
-    console.error(`Unknown command: ${command}`);
+const constructHelpText = (): string => {
+    let helpText = "bun-dotfile-manager\n\nAvailable commands:\n\n";
+
+    for (const command in commandHandlers) {
+        helpText += commandHandlers[command as CommandName].helptext + "\n\n";
+    }
+
+    return helpText.trimEnd();
+};
+
+try {
+    if (!command) {
+        console.error("Please provide a command.");
+        await commandHandlers["help"].handler();
+        process.exit(1);
+    } else if (command in commandHandlers) {
+        await commandHandlers[command as CommandName].handler();
+    } else {
+        console.error(`Unknown command: ${command}`);
+        await commandHandlers["help"].handler();
+        process.exit(1);
+    }
+} catch (err) {
+    console.error(`There was an error while executing this command:\n${err}`);
     process.exit(1);
 }
