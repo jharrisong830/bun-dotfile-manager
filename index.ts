@@ -59,7 +59,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "version": {
         helptext: "version\ndisplays version information",
         handler: async () => {
-            console.log(`bun-dotfile-manager version ${VERSION}\nbuilt on ${BUILD_TIME} from ${COMMIT_HASH}\nfor platform ${PLATFORM}`);
+            console.log(`bdfm (Bun DotFile Manager) version ${VERSION}\nbuilt on ${BUILD_TIME} from ${COMMIT_HASH}\nfor platform ${PLATFORM}`);
         }
     },
     "relink": {

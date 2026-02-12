@@ -21,12 +21,12 @@ const commitHash = await $`git rev-parse HEAD`.text();
 await Bun.build({
     entrypoints: ["index.ts"],
     compile: {
-        outfile: `dist/bun-dotfile-manager_${platform}_${version}${platform === "win32" ? ".exe" : ""}`,
+        outfile: `dist/bdfm_${platform}_${version}${platform === "win32" ? ".exe" : ""}`,
         target: TARGET_PLATFORMS[platform],
         autoloadBunfig: false,
         autoloadDotenv: false,
         windows: {
-            title: "Bun Dotfile Manager",
+            title: "Bun DotFile Manager",
             publisher: "jhg.app",
             version: version,
             description: "Command line utility for managing dotfiles across systems"
