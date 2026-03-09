@@ -11,8 +11,7 @@ describe("formatString", () => {
     });
 
     test("formatString with placeholders, no values", () => {
-        const res = util.formatString("Hello, {NAME}!", {});
-        expect(res).toBe("Hello, {NAME}!"); // templates without values are unchanged
+        expect(() => util.formatString("Hello, {NAME}!", {})).toThrow();
     });
 
     test("formatString no placeholders, with values", () => {
@@ -31,8 +30,7 @@ describe("formatString", () => {
     });
 
     test("formatString with multiple placeholders, some values missing", () => {
-        const res = util.formatString("Hello, {NAME}! Welcome to {PLACE}.", { NAME: "John" });
-        expect(res).toBe("Hello, John! Welcome to {PLACE}.");
+        expect(() => util.formatString("Hello, {NAME}! Welcome to {PLACE}.", { NAME: "John" })).toThrow();
     });
 
     test("formatString with repeated placeholders", () => {
