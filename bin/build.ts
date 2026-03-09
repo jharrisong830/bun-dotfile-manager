@@ -1,18 +1,21 @@
 import { $ } from "bun";
+import { parseArgs } from "util";
 
 import { getVersionNumber } from "./common";
-
-const platform = process.platform;
-if (platform !== "win32" && platform !== "linux" && platform !== "darwin") {
-    console.error(`Unsupported platform: ${platform}`);
-    process.exit(1);
-}
 
 const TARGET_PLATFORMS: Record<string, Bun.Build.Target> = {
     "win32": "bun-windows-x64",
     "linux": "bun-linux-x64",
     "darwin": "bun-darwin-arm64"
 };
+
+const { positionals } = parseArgs({ allowPositionals: true, strict: true });
+const platform = positionals[0] ?? process.platform;
+
+if (!(platform in TARGET_PLATFORMS)) {
+    console.error(`Unsupported platform: ${platform}. Must be one of: ${Object.keys(TARGET_PLATFORMS).join(", ")}`);
+    process.exit(1);
+}
 
 const version = await getVersionNumber();
 const buildTime = new Date().toISOString();

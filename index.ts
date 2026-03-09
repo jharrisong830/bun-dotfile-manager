@@ -28,6 +28,15 @@ type CommandHandler = {
     handler: () => Promise<void>;
 };
 
+const resolveConfig = async (): Promise<{ dotfile_repo_path: string }> => {
+    if (dotfile_repo_path !== "") {
+        console.log(`Using CLI config: ${dotfile_repo_path}`);
+        return { dotfile_repo_path };
+    }
+    console.log(`Using config file at ${configPath}`);
+    return configuration.readAndFormatConfig(configPath);
+};
+
 const commandHandlers: Record<CommandName, CommandHandler> = {
     "init": {
         helptext: "init\ninitializes a new configuration file",
@@ -47,7 +56,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
         }
     },
     "set-config": {
-        helptext: "set-config <dotfile_repo_path>\nsets the dotfile repository path in the configuration",
+        helptext: "set-config <dotfile_repo_path>\nsets the dotfile repository path in the configuration\nuse {HOME} instead of ~ for cross-platform compatibility (e.g. set-config {HOME}/dotfiles)",
         handler: async () => {
             const dotfileRepoPath = positionals[1];
             if (!dotfileRepoPath) {
@@ -66,17 +75,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "relink": {
         helptext: "relink\nrecreates all symlinks for dotfiles on the current platform",
         handler: async () => {
-            let config;
-            if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
-                console.log(`Using CLI config: ${dotfile_repo_path}`);
-                config = {
-                    dotfile_repo_path: dotfile_repo_path
-                };
-            } else {
-                console.log(`Using config file at ${configPath}`);
-                config = await configuration.readAndFormatConfig(configPath);
-            }
-
+            const config = await resolveConfig();
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
             const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
             console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
@@ -88,17 +87,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "unlink": {
         helptext: "unlink\ndeletes all symlinks for dotfiles on the current platform",
         handler: async () => {
-            let config;
-            if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
-                console.log(`Using CLI config: ${dotfile_repo_path}`);
-                config = {
-                    dotfile_repo_path: dotfile_repo_path
-                };
-            } else {
-                console.log(`Using config file at ${configPath}`);
-                config = await configuration.readAndFormatConfig(configPath);
-            }
-
+            const config = await resolveConfig();
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
             const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
             console.log("OPERATING ON:", filteredMarkers.map(m => m.name));
@@ -110,17 +99,7 @@ const commandHandlers: Record<CommandName, CommandHandler> = {
     "list": {
         helptext: "list\ndisplays all dotfiles in your repository that will be managed on the current platform",
         handler: async () => {
-            let config;
-            if (dotfile_repo_path != "") { // if specified via CLI arg, use that instead
-                console.log(`Using CLI config: ${dotfile_repo_path}`);
-                config = {
-                    dotfile_repo_path: dotfile_repo_path
-                };
-            } else {
-                console.log(`Using config file at ${configPath}`);
-                config = await configuration.readAndFormatConfig(configPath);
-            }
-
+            const config = await resolveConfig();
             const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(config.dotfile_repo_path);
             const filteredMarkers = markers.filter(m => dotfileMarkers.isDotfileLinkedOnCurrentPlatform(m));
 

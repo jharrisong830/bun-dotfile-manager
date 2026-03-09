@@ -14,14 +14,13 @@ const PlatformOverrideSchema = z.strictObject({
 const DotfileMarkerSchema = z.strictObject({
     name: z.string(),
     location: z.string(),
-    _original_path: z.string().optional(),
 
     linux: PlatformOverrideSchema.optional(),
     darwin: PlatformOverrideSchema.optional(),
     win32: PlatformOverrideSchema.optional()
 });
 
-export type DotfileMarker = z.infer<typeof DotfileMarkerSchema>;
+export type DotfileMarker = z.infer<typeof DotfileMarkerSchema> & { _original_path: string };
 
 /**
  * given a marker, returns the path to the actual dotfile in the repository
@@ -29,7 +28,7 @@ export type DotfileMarker = z.infer<typeof DotfileMarkerSchema>;
  * @returns 
  */
 const getRepoPathFromMarkerPath = (marker: DotfileMarker): string => {
-    const dir = marker._original_path!.split("/").slice(0, -1).join("/");
+    const dir = marker._original_path.split("/").slice(0, -1).join("/");
     return `${dir}/${marker.name}`;
 };
 
@@ -47,9 +46,13 @@ const isDotfileLinkedOnCurrentPlatform = (marker: DotfileMarker): boolean => {
 
 const getLocationForCurrentPlatform = (marker: DotfileMarker): string => {
     let loc = marker.location;
-    
-    if (marker[PLATFORM] && marker[PLATFORM].location) {
-        loc = marker[PLATFORM].location;
+
+    if (PLATFORM === "linux" && marker.linux?.location) {
+        loc = marker.linux.location;
+    } else if (PLATFORM === "darwin" && marker.darwin?.location) {
+        loc = marker.darwin.location;
+    } else if (PLATFORM === "win32" && marker.win32?.location) {
+        loc = marker.win32.location;
     }
 
     return util.formatString(loc, {
@@ -115,11 +118,13 @@ const YAMLDocumentToMarkerArr = (yamlString: string, originalPath: string): Arra
     }
     obj = obj.filter(item => item !== null && item !== undefined);
 
-    let result: Array<DotfileMarker> = [];
-    
+    const result: Array<DotfileMarker> = [];
+
     for (const item of obj) {
-        const parsed = DotfileMarkerSchema.parse(item);
-        parsed._original_path = util.convertToForwardSlashes(originalPath);
+        const parsed: DotfileMarker = {
+            ...DotfileMarkerSchema.parse(item),
+            _original_path: util.convertToForwardSlashes(originalPath)
+        };
         result.push(parsed);
     }
 

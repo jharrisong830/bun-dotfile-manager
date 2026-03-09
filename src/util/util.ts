@@ -2,7 +2,10 @@ import { readdir } from "node:fs/promises";
 import { mkdir } from "node:fs/promises";
 
 export const formatString = (s: string, vals: Record<string, string>): string => {
-    return s.replaceAll(/\{(\w+)\}/g, (_, k) => vals[k] || `{${k}}`);
+    return s.replaceAll(/\{(\w+)\}/g, (_, k) => {
+        if (vals[k] === undefined) throw new Error(`unknown template key: ${k}`);
+        return vals[k];
+    });
 };
 
 export const convertToForwardSlashes = (path: string): string => {
@@ -22,7 +25,8 @@ export const doesDirectoryExist = async (path: string): Promise<boolean> => {
     try {
         await readdir(path);
         return true;
-    } catch {
+    } catch (err: any) {
+        if (err.code !== "ENOENT" && err.code !== "ENOTDIR") throw err;
         return false;
     }
 };
