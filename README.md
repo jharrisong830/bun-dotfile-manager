@@ -28,7 +28,7 @@ bun run dev ...
 bdfm init
 ```
 
-Running the above command will generate an application config file at `/.config/bun-dotfile-manager/config.yaml` on Unix-like systems, and `~/AppData/Local/bun-dotfile-manager/config.yaml` on Windows.
+Running the above command will generate an application config file at `~/.config/bun-dotfile-manager/config.yaml` on Unix-like systems, and `~/AppData/Local/bun-dotfile-manager/config.yaml` on Windows.
 
 This config file will just be a single-line YAML document, which tells the application where your dotfile repository is located. You can edit this file directly, or call `bdfm set-config <new_path_here>` to specify where your dotfile repository is located.
 
@@ -42,7 +42,7 @@ dotfile_repo_path: "{HOME}/dotfiles"
 If this config file doesn't exist, you can specify the dotfile repository location as a CLI option. This will take precedence over the location specified in the config file, if it exists.
 
 ```sh
-bdfm relink --dotfile_repo_path /home/user/dotfiles
+bdfm relink --dotfile-repo-path /home/user/dotfiles
 ```
 
 This option is useful if you are setting up your dotfiles for the first time, and want to include the `bdfm` config in your dotfiles repository.
