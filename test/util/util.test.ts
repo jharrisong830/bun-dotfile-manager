@@ -77,27 +77,25 @@ describe("convertToForwardSlashes", () => {
 });
 
 describe("doesDirectoryExist", () => {
+    const RESOURCES_DIR = `${import.meta.dir}/../resources`;
+
     test("doesDirectoryExist directory exists", async () => {
-        const realDirectory = "test/resources";
-        const res = await util.doesDirectoryExist(realDirectory);
+        const res = await util.doesDirectoryExist(RESOURCES_DIR);
         expect(res).toBe(true);
     });
 
     test("doesDirectoryExist directory does not exist", async () => {
-        const fakeDirectory = "test/dne";
-        const res = await util.doesDirectoryExist(fakeDirectory);
+        const res = await util.doesDirectoryExist(`${RESOURCES_DIR}/dne`);
         expect(res).toBe(false);
     });
 
     test("doesDirectoryExist path is a file", async () => {
-        const realFile = "test/resources/config.yaml";
-        const res = await util.doesDirectoryExist(realFile);
+        const res = await util.doesDirectoryExist(`${RESOURCES_DIR}/config.yaml`);
         expect(res).toBe(false);
     });
 
     test("doesDirectoryExist path does not exist", async () => {
-        const fakeFile = "test/resources/dne.txt";
-        const res = await util.doesDirectoryExist(fakeFile);
+        const res = await util.doesDirectoryExist(`${RESOURCES_DIR}/dne.txt`);
         expect(res).toBe(false);
     });
 });
