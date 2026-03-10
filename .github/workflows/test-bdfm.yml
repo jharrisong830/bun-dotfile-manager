@@ -1,5 +1,5 @@
 name: test-bdfm
-run-name: Test for ${{ github.event_name }} on ${{ github.ref }}
+run-name: Test for ${{ github.event_name }} on ${{ github.ref_name }}
 on: [push]
 jobs:
     test:
