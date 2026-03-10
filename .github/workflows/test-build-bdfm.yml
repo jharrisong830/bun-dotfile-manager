@@ -1,0 +1,51 @@
+name: test-build-bdfm
+run-name: Test and Build for ${{ github.event_name }} on ${{ github.ref_name }}
+on: [push]
+jobs:
+    test-and-build:
+        name: Test and Build
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v6
+
+            - name: Setup Bun
+              uses: oven-sh/setup-bun@v2
+              with:
+                bun-version: "latest"
+
+
+            - name: Install dependencies
+              run: bun install
+
+            - name: Run tests
+              run: bun test
+
+
+            - name: Build for Linux 
+              run: bun run build linux
+
+            - name: Build for macOS
+              run: bun run build darwin
+
+            - name: Build for Windows
+              run: bun run build win32
+
+
+            - name: Upload Linux Build Artifact
+              uses: actions/upload-artifact@v7
+              with:
+                name: bdfm-linux
+                path: dist/bdfm-linux
+            
+            - name: Upload macOS Build Artifact
+              uses: actions/upload-artifact@v7
+              with:
+                name: bdfm-darwin
+                path: dist/bdfm-darwin
+
+            - name: Upload Windows Build Artifact
+              uses: actions/upload-artifact@v7
+              with:
+                name: bdfm-win32.exe
+                path: dist/bdfm-win32.exe
