@@ -1,4 +1,4 @@
-import { describe, test, expect, afterAll } from "bun:test";
+import { describe, test, expect, afterAll, afterEach } from "bun:test";
 
 import "../resources/global-setup";
 
@@ -10,7 +10,7 @@ import constants from "../../src/util/constants";
 const TMP = join(import.meta.dir, "../../tmp/dotfile-marker-tests");
 
 afterAll(async () => {
-    await rm(join(import.meta.dir, "../../tmp"), { recursive: true, force: true });
+    await rm(TMP, { recursive: true, force: true });
 });
 
 describe("getRepoPathFromMarkerPath", () => {
@@ -313,7 +313,13 @@ location: /home/testuser/.gitconfig
 });
 
 describe("isDotfileLinkedOnCurrentPlatform", () => {
-    test("returns true when no platform override is present", () => {
+    const originalPlatform = (globalThis as any).PLATFORM;
+
+    afterEach(() => {
+        (globalThis as any).PLATFORM = originalPlatform;
+    });
+
+    test("isDotfileLinkedOnCurrentPlatform returns true when no platform override is present", () => {
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "/home/testuser/.zshrc"
@@ -321,30 +327,55 @@ describe("isDotfileLinkedOnCurrentPlatform", () => {
         expect(dotfileMarkers.isDotfileLinkedOnCurrentPlatform(marker)).toBe(true);
     });
 
-    test("returns platform shouldLink when platform override exists for current platform", () => {
-        const platform = process.platform as "linux" | "darwin" | "win32";
+    test("isDotfileLinkedOnCurrentPlatform returns linux shouldLink when PLATFORM is linux", () => {
+        (globalThis as any).PLATFORM = "linux";
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "/home/testuser/.zshrc",
-            [platform]: { shouldLink: false }
+            linux: { shouldLink: false }
         };
         expect(dotfileMarkers.isDotfileLinkedOnCurrentPlatform(marker)).toBe(false);
     });
 
-    test("returns true when override exists only for a different platform", () => {
-        // Pick a platform that is definitely not the current one
-        const otherPlatform = process.platform === "linux" ? "darwin" : "linux";
+    test("isDotfileLinkedOnCurrentPlatform returns darwin shouldLink when PLATFORM is darwin", () => {
+        (globalThis as any).PLATFORM = "darwin";
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "/home/testuser/.zshrc",
-            [otherPlatform]: { shouldLink: false }
+            darwin: { shouldLink: false }
+        };
+        expect(dotfileMarkers.isDotfileLinkedOnCurrentPlatform(marker)).toBe(false);
+    });
+
+    test("isDotfileLinkedOnCurrentPlatform returns win32 shouldLink when PLATFORM is win32", () => {
+        (globalThis as any).PLATFORM = "win32";
+        const marker: DotfileMarker = {
+            name: ".zshrc",
+            location: "/home/testuser/.zshrc",
+            win32: { shouldLink: false }
+        };
+        expect(dotfileMarkers.isDotfileLinkedOnCurrentPlatform(marker)).toBe(false);
+    });
+
+    test("isDotfileLinkedOnCurrentPlatform returns true when only a different platform's override is present", () => {
+        (globalThis as any).PLATFORM = "linux";
+        const marker: DotfileMarker = {
+            name: ".zshrc",
+            location: "/home/testuser/.zshrc",
+            darwin: { shouldLink: false }
         };
         expect(dotfileMarkers.isDotfileLinkedOnCurrentPlatform(marker)).toBe(true);
     });
 });
 
 describe("getLocationForCurrentPlatform", () => {
-    test("returns formatted default location when no platform override", () => {
+    const originalPlatform = (globalThis as any).PLATFORM;
+
+    afterEach(() => {
+        (globalThis as any).PLATFORM = originalPlatform;
+    });
+
+    test("getLocationForCurrentPlatform returns formatted default location when no platform override", () => {
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "{HOME}/.zshrc"
@@ -353,7 +384,7 @@ describe("getLocationForCurrentPlatform", () => {
         expect(result).toBe(`${constants.HOME_DIR}/.zshrc`);
     });
 
-    test("substitutes {FILENAME} with the marker name", () => {
+    test("getLocationForCurrentPlatform substitutes {FILENAME} with the marker name", () => {
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "{HOME}/dotfiles/{FILENAME}"
@@ -362,24 +393,56 @@ describe("getLocationForCurrentPlatform", () => {
         expect(result).toBe(`${constants.HOME_DIR}/dotfiles/.zshrc`);
     });
 
-    test("uses platform-specific location when override exists for current platform", () => {
-        const platform = process.platform as "linux" | "darwin" | "win32";
-        const platformLocation = "/platform/specific/location";
+    test("getLocationForCurrentPlatform uses linux-specific location when PLATFORM is linux", () => {
+        (globalThis as any).PLATFORM = "linux";
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "/default/location",
-            [platform]: { shouldLink: true, location: platformLocation }
+            linux: { shouldLink: true, location: "/linux/specific/location" }
         };
         const result = dotfileMarkers.getLocationForCurrentPlatform(marker);
-        expect(result).toBe(platformLocation);
+        expect(result).toBe("/linux/specific/location");
     });
 
-    test("uses default location when platform override has no location field", () => {
-        const platform = process.platform as "linux" | "darwin" | "win32";
+    test("getLocationForCurrentPlatform uses darwin-specific location when PLATFORM is darwin", () => {
+        (globalThis as any).PLATFORM = "darwin";
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: "/default/location",
-            [platform]: { shouldLink: true }
+            darwin: { shouldLink: true, location: "/darwin/specific/location" }
+        };
+        const result = dotfileMarkers.getLocationForCurrentPlatform(marker);
+        expect(result).toBe("/darwin/specific/location");
+    });
+
+    test("getLocationForCurrentPlatform uses win32-specific location when PLATFORM is win32", () => {
+        (globalThis as any).PLATFORM = "win32";
+        const marker: DotfileMarker = {
+            name: ".zshrc",
+            location: "/default/location",
+            win32: { shouldLink: true, location: "C:/Users/testuser/.zshrc" }
+        };
+        const result = dotfileMarkers.getLocationForCurrentPlatform(marker);
+        expect(result).toBe("C:/Users/testuser/.zshrc");
+    });
+
+    test("getLocationForCurrentPlatform uses default location when platform override has no location field", () => {
+        (globalThis as any).PLATFORM = "linux";
+        const marker: DotfileMarker = {
+            name: ".zshrc",
+            location: "/default/location",
+            linux: { shouldLink: true }
+        };
+        const result = dotfileMarkers.getLocationForCurrentPlatform(marker);
+        expect(result).toBe("/default/location");
+    });
+
+    test("getLocationForCurrentPlatform uses default location when override exists only for a different platform", () => {
+        (globalThis as any).PLATFORM = "linux";
+        const marker: DotfileMarker = {
+            name: ".zshrc",
+            location: "/default/location",
+            darwin: { shouldLink: true, location: "/darwin/specific/location" }
         };
         const result = dotfileMarkers.getLocationForCurrentPlatform(marker);
         expect(result).toBe("/default/location");
@@ -387,7 +450,7 @@ describe("getLocationForCurrentPlatform", () => {
 });
 
 describe("findAllDotfileMarkers", () => {
-    test("finds .dotfiles files recursively in a directory tree", async () => {
+    test("findAllDotfileMarkers finds .dotfiles files recursively in a directory tree", async () => {
         const repoRoot = join(TMP, "find-test-repo");
         await mkdir(join(repoRoot, "subdir/nested"), { recursive: true });
         await writeFile(join(repoRoot, ".dotfiles"), "name: a\nlocation: /a");
@@ -401,7 +464,7 @@ describe("findAllDotfileMarkers", () => {
         }
     });
 
-    test("returns empty array when no .dotfiles files exist", async () => {
+    test("findAllDotfileMarkers returns empty array when no .dotfiles files exist", async () => {
         const emptyRepo = join(TMP, "empty-repo");
         await mkdir(emptyRepo, { recursive: true });
 
@@ -409,7 +472,7 @@ describe("findAllDotfileMarkers", () => {
         expect(results).toEqual([]);
     });
 
-    test("does not return non-.dotfiles files", async () => {
+    test("findAllDotfileMarkers does not return non-.dotfiles files", async () => {
         const repoRoot = join(TMP, "no-match-repo");
         await mkdir(repoRoot, { recursive: true });
         await writeFile(join(repoRoot, "dotfiles"), "name: a\nlocation: /a");
@@ -421,7 +484,7 @@ describe("findAllDotfileMarkers", () => {
 });
 
 describe("getAllDotfileMarkersForRepository", () => {
-    test("parses all markers from a repo tree", async () => {
+    test("getAllDotfileMarkersForRepository parses all markers from a repo tree", async () => {
         const repoRoot = join(TMP, "full-repo");
         await mkdir(join(repoRoot, "configs"), { recursive: true });
         await writeFile(join(repoRoot, ".dotfiles"), "name: .zshrc\nlocation: /home/user/.zshrc");
@@ -443,17 +506,25 @@ describe("getAllDotfileMarkersForRepository", () => {
         }
     });
 
-    test("returns empty array when repo has no .dotfiles files", async () => {
+    test("getAllDotfileMarkersForRepository returns empty array when repo has no .dotfiles files", async () => {
         const repoRoot = join(TMP, "empty-full-repo");
         await mkdir(repoRoot, { recursive: true });
 
         const markers = await dotfileMarkers.getAllDotfileMarkersForRepository(repoRoot);
         expect(markers).toEqual([]);
     });
+
+    test("getAllDotfileMarkersForRepository throws when a .dotfiles file contains invalid content", async () => {
+        const repoRoot = join(TMP, "invalid-repo");
+        await mkdir(repoRoot, { recursive: true });
+        await writeFile(join(repoRoot, ".dotfiles"), "name: .zshrc\n# missing location key");
+
+        await expect(dotfileMarkers.getAllDotfileMarkersForRepository(repoRoot)).rejects.toThrow();
+    });
 });
 
 describe("createSymlinkForDotfileMarker", () => {
-    test("creates a symlink from repo path to the resolved location", async () => {
+    test("createSymlinkForDotfileMarker creates a symlink from repo path to the resolved location", async () => {
         const repoRoot = join(TMP, "symlink-marker-repo");
         await mkdir(repoRoot, { recursive: true });
         const sourceFile = join(repoRoot, ".zshrc");
@@ -474,10 +545,30 @@ describe("createSymlinkForDotfileMarker", () => {
         const stat = await lstat(dest);
         expect(stat.isSymbolicLink()).toBe(true);
     });
+
+    test("createSymlinkForDotfileMarker throws when destination already exists as a regular file", async () => {
+        const repoRoot = join(TMP, "symlink-marker-throws-repo");
+        await mkdir(repoRoot, { recursive: true });
+        const sourceFile = join(repoRoot, ".zshrc");
+        await writeFile(sourceFile, "# zshrc");
+
+        const dest = join(TMP, "symlink-throws-dest/.zshrc");
+        const destDir = join(TMP, "symlink-throws-dest");
+        await mkdir(destDir, { recursive: true });
+        await writeFile(dest, "# existing file");
+
+        const marker: DotfileMarker = {
+            name: ".zshrc",
+            location: dest,
+            _original_path: join(repoRoot, ".dotfiles")
+        };
+
+        await expect(dotfileMarkers.createSymlinkForDotfileMarker(marker)).rejects.toThrow();
+    });
 });
 
 describe("deleteSymlinkForDotfileMarker", () => {
-    test("removes a symlink at the resolved location", async () => {
+    test("deleteSymlinkForDotfileMarker removes a symlink at the resolved location", async () => {
         const repoRoot = join(TMP, "delete-marker-repo");
         await mkdir(repoRoot, { recursive: true });
         const sourceFile = join(repoRoot, ".zshrc");
@@ -500,7 +591,7 @@ describe("deleteSymlinkForDotfileMarker", () => {
         expect(await file.exists()).toBe(false);
     });
 
-    test("does nothing when the symlink does not exist", async () => {
+    test("deleteSymlinkForDotfileMarker does nothing when the symlink does not exist", async () => {
         const marker: DotfileMarker = {
             name: ".zshrc",
             location: join(TMP, "nonexistent-link/.zshrc"),
