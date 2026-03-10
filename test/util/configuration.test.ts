@@ -1,17 +1,16 @@
-import { expect, test, describe } from "bun:test"
+import { expect, test, describe, afterAll } from "bun:test";
+import { rm } from "node:fs/promises";
 
 import "../resources/global-setup";
 
 import configuration, { type Configuration } from "../../src/util/configuration";
-import util from "../../src/util/util";
-import constants from "../../src/util/constants";
 
-import properties from "../resources/properties.yaml";
+const configPath = `${import.meta.dir}/../resources/config.yaml`;
+const TMP = `${import.meta.dir}/../../tmp/configuration-tests`;
 
-const configPath = util.formatString(
-    (properties["platform-path"] as Record<string, unknown>)[PLATFORM] as string, 
-    { HOME: constants.HOME_DIR }
-);
+afterAll(async () => {
+    await rm(TMP, { recursive: true, force: true });
+});
 
 const valid_config_object: Configuration = {
     dotfile_repo_path: "/home/testuser/dotfiles"
@@ -55,24 +54,18 @@ describe("YAMLStringToConfigObj", () => {
 
 describe("doesConfigExist", () => {
     test("doesConfigExist file exists", async () => {
-        expect(configPath).toBe("test/resources/config.yaml");
-
         const res = await configuration.doesConfigExist(configPath);
         expect(res).toBe(true);
     });
 
     test("doesConfigExist file not exists", async () => {
-        const invalidFilePath = "test/resources/dne.yaml";
-
-        const res = await configuration.doesConfigExist(invalidFilePath);
+        const res = await configuration.doesConfigExist(`${import.meta.dir}/../resources/dne.yaml`);
         expect(res).toBe(false);
     });
 });
 
 describe("readAndFormatConfig", () => {
     test("readAndFormatConfig file exists", async () => {
-        expect(configPath).toBe("test/resources/config.yaml");
-        
         const res = await configuration.readAndFormatConfig(configPath);
         const expected: Configuration = {
             dotfile_repo_path: "/home/testuser/dotfiles"
@@ -81,13 +74,42 @@ describe("readAndFormatConfig", () => {
     });
 
     test("readAndFormatConfig file not exists", async () => {
-        const invalidFilePath = "test/resources/dne.yaml";
-        expect(configuration.readAndFormatConfig(invalidFilePath)).rejects.toThrow();
+        await expect(configuration.readAndFormatConfig(`${import.meta.dir}/../resources/dne.yaml`)).rejects.toThrow();
     });
 
     test("readAndFormatConfig invalid contents", async () => {
-        const invalidContentsPath = "test/resources/global-setup.ts"; // will not be parsed by YAMLStringToConfigObj
-        expect(configuration.readAndFormatConfig(invalidContentsPath)).rejects.toThrow();
+        const invalidContentsPath = `${import.meta.dir}/../resources/global-setup.ts`;
+        await expect(configuration.readAndFormatConfig(invalidContentsPath)).rejects.toThrow();
     });
 });
-    
+
+describe("initializeConfigFile", () => {
+    test("writes a valid default config to a new path", async () => {
+        const path = `${TMP}/config.yaml`;
+        await configuration.initializeConfigFile(path);
+
+        const result = await configuration.readAndFormatConfig(path);
+        expect(result.dotfile_repo_path).toBeTruthy();
+    });
+});
+
+describe("setConfig", () => {
+    test("writes the given path to the config file", async () => {
+        const path = `${TMP}/set-config.yaml`;
+        const newRepoPath = "/home/testuser/my-dotfiles";
+
+        await configuration.setConfig(path, newRepoPath);
+
+        const result = await configuration.readAndFormatConfig(path);
+        expect(result).toEqual({ dotfile_repo_path: newRepoPath });
+    });
+
+    test("overwrites an existing config file", async () => {
+        const path = `${TMP}/overwrite-config.yaml`;
+        await configuration.setConfig(path, "/home/testuser/old-dotfiles");
+        await configuration.setConfig(path, "/home/testuser/new-dotfiles");
+
+        const result = await configuration.readAndFormatConfig(path);
+        expect(result).toEqual({ dotfile_repo_path: "/home/testuser/new-dotfiles" });
+    });
+});
