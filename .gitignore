@@ -5,6 +5,7 @@ node_modules
 out
 dist
 *.tgz
+*.bun-build
 
 # code coverage
 coverage
@@ -36,3 +37,6 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 *.exe
 temp/
 tmp/
+
+CLAUDE.local.md
+.claude/
