@@ -5,11 +5,12 @@ import "../resources/global-setup";
 import { lstat, rm, mkdir, writeFile, symlink as nodeSymlink } from "node:fs/promises";
 import { join } from "node:path";
 import symlink from "../../src/fs/symlink";
+import util from "../../src/util/util";
 
 const TMP = join(import.meta.dir, "../../tmp/symlink-tests");
 
 afterAll(async () => {
-    await rm(join(import.meta.dir, "../../tmp"), { recursive: true, force: true });
+    await rm(TMP, { recursive: true, force: true });
 });
 
 describe("unlinkDotfile", () => {
@@ -48,6 +49,21 @@ describe("unlinkDotfile", () => {
         await mkdir(dir, { recursive: true });
 
         await expect(symlink.unlinkDotfile(dir)).rejects.toThrow();
+    });
+
+    test("removes a symlink pointing to a directory", async () => {
+        await mkdir(TMP, { recursive: true });
+        const sourceDir = join(TMP, "source-dir");
+        const link = join(TMP, "link-to-dir");
+        await mkdir(sourceDir, { recursive: true });
+        await nodeSymlink(sourceDir, link);
+
+        const statBefore = await lstat(link);
+        expect(statBefore.isSymbolicLink()).toBe(true);
+
+        await symlink.unlinkDotfile(link);
+
+        expect(await util.doesDirectoryExist(link)).toBe(false);
     });
 });
 
@@ -93,6 +109,18 @@ describe("linkDotfile", () => {
 
         const text = await Bun.file(dest).text();
         expect(text).toBe("second");
+    });
+
+    test("creates a symlink at destination pointing to a source directory", async () => {
+        await mkdir(TMP, { recursive: true });
+        const sourceDir = join(TMP, "source-config-dir");
+        const dest = join(TMP, "linked-config-dir");
+        await mkdir(sourceDir, { recursive: true });
+
+        await symlink.linkDotfile(sourceDir, dest);
+
+        const stat = await lstat(dest);
+        expect(stat.isSymbolicLink()).toBe(true);
     });
 
     test("throws when destination already exists as a regular file", async () => {
