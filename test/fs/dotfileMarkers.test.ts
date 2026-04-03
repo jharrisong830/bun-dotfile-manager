@@ -384,10 +384,10 @@ describe("getLocationForCurrentPlatform", () => {
         expect(result).toBe(`${constants.HOME_DIR}/.zshrc`);
     });
 
-    test("getLocationForCurrentPlatform substitutes {FILENAME} with the marker name", () => {
+    test("getLocationForCurrentPlatform substitutes {NAME} with the marker name", () => {
         const marker: DotfileMarker = {
             name: ".zshrc",
-            location: "{HOME}/dotfiles/{FILENAME}"
+            location: "{HOME}/dotfiles/{NAME}"
         };
         const result = dotfileMarkers.getLocationForCurrentPlatform(marker);
         expect(result).toBe(`${constants.HOME_DIR}/dotfiles/.zshrc`);

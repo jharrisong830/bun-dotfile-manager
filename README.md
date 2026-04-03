@@ -157,11 +157,11 @@ location: "{HOME}/.gitconfig"
 
 This could translate to `C:/Users/user`, or `/Users/user`, or `/home/user`, depending on what system you're using.
 
-We can also use `{FILENAME}` to avoid retyping the name of the file and possibly making a mistake. For example, the following config will still symlink the file to `/home/user/.gitconfig`:
+We can also use `{NAME}` to avoid retyping the name of the file and possibly making a mistake. For example, the following config will still symlink the file to `/home/user/.gitconfig`:
 
 ```yaml
 name: ".gitconfig"
-location: "/home/user/{FILENAME}"
+location: "/home/user/{NAME}"
 ```
 
 Multiple format specifiers can be used at once.
@@ -191,7 +191,7 @@ Additionally, multiple platform overrides can be specified for a dotfile:
 
 ```yaml
 name: ".zshrc"
-location: "{HOME}/{FILENAME}"
+location: "{HOME}/{NAME}"
 win32:
     shouldLink: false
 linux:
@@ -200,7 +200,7 @@ linux:
 ---
 
 name: ".bashrc"
-location: "{HOME}/{FILENAME}"
+location: "{HOME}/{NAME}"
 win32:
     shouldLink: true
     location: "{HOME}/gitbash.bashrc"

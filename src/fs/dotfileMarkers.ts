@@ -57,7 +57,7 @@ const getLocationForCurrentPlatform = (marker: DotfileMarker): string => {
 
     return util.formatString(loc, {
         HOME: constants.HOME_DIR,
-        FILENAME: marker.name
+        NAME: marker.name
     });
 };
 
